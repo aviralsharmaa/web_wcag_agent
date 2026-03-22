@@ -1,0 +1,3 @@
+[console_scripts]
+wcag-agent = accessibility_scanner.agent.cli:main
+wcag-scanner = accessibility_scanner.cli:main

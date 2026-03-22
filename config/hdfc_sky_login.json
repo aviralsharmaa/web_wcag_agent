@@ -1,0 +1,67 @@
+{
+  "name": "HDFC SKY Login Flow",
+  "start_url": "https://uat.hdfcsky.com/sky/login",
+  "domain": "uat.hdfcsky.com",
+  "flow_steps": [
+    {
+      "id": "login_screen",
+      "description": "Login page — enter mobile/email/client ID",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input",
+          "value": "JAI",
+          "description": "Enter client ID"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Get Started'), button:text-is('Get Started')",
+          "description": "Click Get Started"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "otp_screen",
+      "description": "OTP verification screen",
+      "actions": [
+        {
+          "type": "otp",
+          "value": "7890",
+          "description": "Enter OTP digits"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "pin_screen",
+      "description": "SKY PIN entry screen",
+      "actions": [
+        {
+          "type": "pin",
+          "value": "1234",
+          "description": "Enter SKY PIN"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "post_login",
+      "description": "Explore all screens after login via LLM-guided routing",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "LLM agent explores every reachable route"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 60,
+    "max_screens": 50
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "LICMF Corporate Website (Experience Beta)",
+  "app_id": "LICMFCW",
+  "start_url": "https://experiencebeta.licmf.com/",
+  "domain": "experiencebeta.licmf.com",
+  "flow_steps": [
+    {
+      "id": "site_explore",
+      "description": "No-login site exploration for all reachable pages/routes",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all reachable screens, menus, tabs, modals, and footer pages without login"
+        }
+      ],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 100,
+    "max_screens": 80
+  }
+}

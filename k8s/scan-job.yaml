@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: accessibility-scan-job
+  namespace: default
+  labels:
+    app: accessibility-scanner
+spec:
+  # Delete the job automatically 100 seconds after completion to clean up the cluster
+  ttlSecondsAfterFinished: 100
+  template:
+    metadata:
+      labels:
+        app: accessibility-scanner
+    spec:
+      containers:
+      - name: scanner
+        image: accessibility-scanner:latest
+        imagePullPolicy: IfNotPresent
+        # The arguments passed to the wcag-scanner CLI entrypoint
+        args:
+          - "--url"
+          - "https://uat.hdfcsky.com/sky/login"
+          - "--domain"
+          - "hdfcsky.com"
+        # Since the app uses LangGraph and LLMs, pass the required API keys as environment variables
+        env:
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: scanner-secrets
+                key: OPENAI_API_KEY
+                optional: true
+      restartPolicy: Never
+  backoffLimit: 2

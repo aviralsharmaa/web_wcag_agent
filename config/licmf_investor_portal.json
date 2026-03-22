@@ -1,0 +1,68 @@
+{
+  "name": "LICMF Investor Portal (KFintech UAT)",
+  "app_id": "LICMFIP",
+  "start_url": "https://clientwebsitesuat2.kfintech.com/",
+  "domain": "clientwebsitesuat2.kfintech.com",
+  "flow_steps": [
+    {
+      "id": "login_page",
+      "description": "Landing / Login page — enter PAN / User ID",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[name='pan'], input[placeholder*='PAN'], input[id*='pan'], input[id*='user'], input:not([type='radio']):not([type='checkbox']):visible",
+          "value": "BEOPM8518Q",
+          "description": "Enter PAN / User ID"
+        },
+        {
+          "type": "captcha",
+          "captcha_image_selector": "img[id*='captcha'], img[alt*='captcha'], img[src*='captcha'], .captcha img, #captchaImage, canvas[id*='captcha']",
+          "captcha_input_selector": "input[name*='captcha'], input[id*='captcha'], input[placeholder*='captcha'], input[placeholder*='Captcha'], input[placeholder*='CAPTCHA']",
+          "max_retries": 3,
+          "description": "Read and enter the text-based captcha"
+        },
+        {
+          "type": "click",
+          "selector": "input[type='checkbox'], span.ant-checkbox-inner, div.checkbox",
+          "description": "Check consent checkbox"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Send OTP'), button:has-text('Generate OTP'), button[type='submit'], button:has-text('Submit'), button:has-text('Login'), button:has-text('Sign In'), button:has-text('Proceed'), input[type='submit']",
+          "description": "Click Submit / Send OTP button"
+        }
+      ],
+      "wait_after": 4000
+    },
+    {
+      "id": "otp_screen",
+      "description": "OTP verification screen",
+      "actions": [
+        {
+          "type": "otp",
+          "value": "123456",
+          "description": "Enter default OTP"
+        }
+      ],
+      "wait_after": 4000
+    },
+    {
+      "id": "dashboard_explore",
+      "description": "Explore all screens after login via LLM-guided routing",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "LLM agent explores every reachable route from the dashboard"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 80,
+    "max_screens": 60
+  }
+}
