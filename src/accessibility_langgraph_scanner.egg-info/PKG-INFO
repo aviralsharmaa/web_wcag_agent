@@ -1,0 +1,44 @@
+Metadata-Version: 2.4
+Name: accessibility-langgraph-scanner
+Version: 0.1.0
+Summary: WCAG 2.1 government-style accessibility scanner built with LangGraph
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: langgraph>=0.2.0
+Requires-Dist: playwright>=1.45.0
+Requires-Dist: litellm>=1.47.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: openai>=1.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0.0; extra == "dev"
+
+# Accessibility LangGraph Scanner
+
+WCAG 2.1 government-style website scanner built with Python, Playwright, and LangGraph.
+
+## What it does
+
+- Crawls a domain with bounded BFS (`max_depth`, `max_pages`)
+- Evaluates checkpoints in 4 buckets:
+  - Content Equivalence
+  - Layout and Perception
+  - Interaction and Navigation
+  - Semantics and Transaction Integrity
+- Returns checkpoint status as one of:
+  - `Pass`
+  - `Fail`
+  - `Cannot verify automatically`
+  - `Not applicable`
+- Applies strict policy by default: any `Fail` or `Cannot verify automatically` means non-compliant.
+
+## Quick start
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .[dev]
+playwright install chromium
+wcag-scanner --url https://example.gov --domain example.gov
+```
+
+Artifacts are written to `artifacts/{run_id}/` including DOM snapshots, evidence index, and `scan-report.json`.
