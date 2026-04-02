@@ -57,6 +57,7 @@ class LLMRouter:
         interactive_elements: list[dict[str, Any]],
         visited_urls: list[str],
         current_url: str,
+        exploration_context: str = "",
     ) -> dict[str, Any]:
         elements_text = "\n".join(
             f"  [{i}] <{e['tag']}> "
@@ -79,10 +80,13 @@ class LLMRouter:
         self._history.append({"role": "user", "content": user_msg})
 
         try:
+            system_prompt = SYSTEM_PROMPT
+            if exploration_context.strip():
+                system_prompt = f"{SYSTEM_PROMPT}\n\nProduct-specific exploration guidance:\n{exploration_context.strip()}"
             resp = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "system", "content": system_prompt},
                     *self._history[-10:],  # keep context window manageable
                 ],
                 temperature=0.1,

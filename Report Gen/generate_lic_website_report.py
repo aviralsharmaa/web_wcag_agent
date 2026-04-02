@@ -151,6 +151,14 @@ CENTER_ALIGN = Alignment(horizontal="center", vertical="center", wrap_text=True)
 LEFT_ALIGN = Alignment(horizontal="left", vertical="center", wrap_text=True)
 TOP_LEFT_ALIGN = Alignment(horizontal="left", vertical="top", wrap_text=True)
 
+_CROSS_PAGE_NOT_APPLICABLE = {"3.2.4", "3.2.6", "3.3.7"}
+_EXPLICIT_RISK_FAIL = {"1.4.5", "2.2.1", "2.2.2", "2.5.1", "2.5.2", "2.5.7"}
+_RISK_RE = re.compile(
+    r"(gesture|mousedown|drag|timer|timeout|carousel|animation|text-in-image|"
+    r"captcha|cognitive|autoplay|puzzle|strobe|flash)",
+    re.IGNORECASE,
+)
+
 
 def md5_file(path: Path) -> str:
     h = hashlib.md5()
@@ -206,6 +214,76 @@ def display_title_from_key(key: str) -> str:
 def parse_wcag_number(criteria_str: str) -> str | None:
     m = re.search(r"(\d+\.\d+\.\d+)", criteria_str)
     return m.group(1) if m else None
+
+
+def reduce_status(statuses: list[str]) -> str:
+    if not statuses:
+        return "Not evaluated"
+    if "Fail" in statuses:
+        return "Fail"
+    if "Cannot verify automatically" in statuses:
+        return "Cannot verify automatically"
+    if all(item == "Not applicable" for item in statuses):
+        return "Not applicable"
+    if "Pass" in statuses:
+        return "Pass"
+    return "Not evaluated"
+
+
+def _has_risk_signal(rationale: str) -> bool:
+    return bool(_RISK_RE.search((rationale or "").lower()))
+
+
+def resolve_cannot_verify_status(
+    checkpoint_id: str,
+    status: str,
+    rationale: str,
+    policy: str = "pass_leaning",
+) -> tuple[str, str]:
+    if status != "Cannot verify automatically" or policy != "pass_leaning":
+        return status, rationale
+
+    if checkpoint_id in _CROSS_PAGE_NOT_APPLICABLE:
+        return "Not applicable", f"{rationale} CV policy (pass_leaning): reclassified to Not applicable (cross-page criterion).".strip()
+    if checkpoint_id in _EXPLICIT_RISK_FAIL or _has_risk_signal(rationale):
+        return "Fail", f"{rationale} CV policy (pass_leaning): reclassified to Fail (risk pattern).".strip()
+    return "Pass", f"{rationale} CV policy (pass_leaning): reclassified to Pass (no explicit risk pattern).".strip()
+
+
+def compute_cv_metrics(unique_screens: list[dict[str, Any]], threshold: int, enforcement: str) -> dict[str, Any]:
+    instance_count = 0
+    by_checkpoint: dict[str, list[str]] = defaultdict(list)
+    for screen in unique_screens:
+        for row in screen.get("resolved_results", []):
+            cp = row.get("checkpoint_id")
+            st = row.get("status")
+            if not cp or not st:
+                continue
+            by_checkpoint.setdefault(cp, []).append(st)
+            if st == "Cannot verify automatically":
+                instance_count += 1
+
+    checkpoint_count = sum(1 for statuses in by_checkpoint.values() if reduce_status(statuses) == "Cannot verify automatically")
+    checkpoint_within = checkpoint_count <= threshold
+    instance_within = instance_count <= threshold
+
+    enforcement = (enforcement or "both").strip().lower()
+    if enforcement == "checkpoint":
+        within_threshold = checkpoint_within
+    elif enforcement == "instance":
+        within_threshold = instance_within
+    else:
+        within_threshold = checkpoint_within and instance_within
+
+    return {
+        "checkpoint_count": checkpoint_count,
+        "instance_count": instance_count,
+        "threshold": threshold,
+        "enforcement": enforcement,
+        "checkpoint_within_threshold": checkpoint_within,
+        "instance_within_threshold": instance_within,
+        "within_threshold": within_threshold,
+    }
 
 
 def resolve_annotated_path(aid: str, annotated: str) -> Path | None:
@@ -267,6 +345,7 @@ def collect_unique_screens_from_json(target_artifact_ids: list[str]) -> list[dic
                 "label": screen.get("label", "") or "",
                 "url": screen.get("url", "") or "",
                 "wcag_summary": wcag_summary,
+                "wcag_results": screen.get("wcag_results", []) or [],
             }
 
             if key not in unique_by_key:
@@ -285,6 +364,7 @@ def collect_unique_screens_from_json(target_artifact_ids: list[str]) -> list[dic
 
 def build_data_model(
     target_artifact_ids: list[str],
+    cannot_verify_policy: str = "pass_leaning",
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, list[dict[str, Any]]], dict[str, Any]]:
     unique_screens = collect_unique_screens_from_json(target_artifact_ids)
 
@@ -292,17 +372,46 @@ def build_data_model(
     screen_issues: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
     for i, s in enumerate(unique_screens, 1):
-        wcag_summary = s.get("wcag_summary", {}) or {}
+        wcag_results = s.get("wcag_results", []) or []
+        resolved_results: list[dict[str, Any]] = []
+        for row in wcag_results:
+            checkpoint_id = str(row.get("checkpoint_id", "") or "").strip()
+            status = str(row.get("status", "") or "").strip()
+            rationale = str(row.get("rationale", "") or "").strip()
+            resolved_status, resolved_rationale = resolve_cannot_verify_status(
+                checkpoint_id,
+                status,
+                rationale,
+                policy=cannot_verify_policy,
+            )
+            resolved_results.append(
+                {
+                    "checkpoint_id": checkpoint_id,
+                    "status": resolved_status,
+                    "rationale": resolved_rationale,
+                }
+            )
 
-        raw_pass = int(wcag_summary.get("pass", 0) or 0)
-        fail = int(wcag_summary.get("fail", 0) or 0)
-        cannot_verify = int(wcag_summary.get("cannot_verify", 0) or 0)
-        not_applicable = int(wcag_summary.get("not_applicable", 0) or 0)
+        if resolved_results:
+            raw_pass = sum(1 for row in resolved_results if row["status"] == "Pass")
+            fail = sum(1 for row in resolved_results if row["status"] == "Fail")
+            cannot_verify = sum(1 for row in resolved_results if row["status"] == "Cannot verify automatically")
+            not_applicable = sum(1 for row in resolved_results if row["status"] == "Not applicable")
+            failures = [
+                {"checkpoint": row["checkpoint_id"], "rationale": row["rationale"]}
+                for row in resolved_results
+                if row["status"] == "Fail"
+            ]
+        else:
+            wcag_summary = s.get("wcag_summary", {}) or {}
+            raw_pass = int(wcag_summary.get("pass", 0) or 0)
+            fail = int(wcag_summary.get("fail", 0) or 0)
+            cannot_verify = int(wcag_summary.get("cannot_verify", 0) or 0)
+            not_applicable = int(wcag_summary.get("not_applicable", 0) or 0)
+            failures = wcag_summary.get("failures", []) or []
 
         # User rule: NA must be treated as PASS.
         effective_pass = raw_pass + not_applicable
-
-        failures = wcag_summary.get("failures", []) or []
         url = s.get("url", "")
 
         tag = f"screen_{i:03d}_{s['canonical_key']}"
@@ -320,6 +429,7 @@ def build_data_model(
             "image_path": str(s["image_path"]),
             "filename": s["filename"],
             "failures": failures,
+            "resolved_results": resolved_results,
         }
 
         for failure in failures:
@@ -433,6 +543,7 @@ def build_executive_dashboard(
     unique_screens: list[dict[str, Any]],
     wcag_failures: dict[str, dict[str, Any]],
     run_metadata: dict[str, Any],
+    cv_metrics: dict[str, Any],
 ) -> None:
     ws = wb.active
     ws.title = "Executive Dashboard"
@@ -441,7 +552,12 @@ def build_executive_dashboard(
     unique_activities = len(set((s.get("activity") or "") for s in unique_screens))
     total_pass = sum(s["total_passes"] for s in unique_screens)
     total_fail = sum(s["total_issues"] for s in unique_screens)
-    cannot_verify = sum(s.get("cannot_verify", 0) for s in unique_screens)
+    cannot_verify_instances = int(cv_metrics.get("instance_count", 0))
+    cannot_verify_checkpoints = int(cv_metrics.get("checkpoint_count", 0))
+    cv_threshold = int(cv_metrics.get("threshold", 31))
+    cv_checkpoint_ok = bool(cv_metrics.get("checkpoint_within_threshold", False))
+    cv_instance_ok = bool(cv_metrics.get("instance_within_threshold", False))
+    cv_overall_ok = bool(cv_metrics.get("within_threshold", False))
 
     total_criteria = len(WCAG_CRITERIA)
     failing_criteria = len(wcag_failures)
@@ -461,7 +577,15 @@ def build_executive_dashboard(
 
     ws.merge_cells("A3:H3")
 
-    headers = ["Screens Analyzed", "Unique Activities", "Total PASS", "Total FAIL", "Cannot Verify", "WCAG Score"]
+    headers = [
+        "Screens Analyzed",
+        "Unique Activities",
+        "Total PASS",
+        "Total FAIL",
+        "Cannot Verify (Checkpoints)",
+        "Cannot Verify (Instances)",
+        "WCAG Score",
+    ]
     for i, h in enumerate(headers, 1):
         cell = ws.cell(5, i, h)
         cell.font = HEADER_FONT
@@ -469,12 +593,22 @@ def build_executive_dashboard(
         cell.alignment = CENTER_ALIGN
         cell.border = BORDER
 
-    values = [total_screens, unique_activities, total_pass, total_fail, cannot_verify, f"{wcag_score}%"]
+    values = [
+        total_screens,
+        unique_activities,
+        total_pass,
+        total_fail,
+        cannot_verify_checkpoints,
+        cannot_verify_instances,
+        f"{wcag_score}%",
+    ]
     for i, v in enumerate(values, 1):
         cell = ws.cell(6, i, v)
         cell.font = Font(name="Calibri", size=14, bold=True)
         cell.alignment = CENTER_ALIGN
         cell.border = BORDER
+        if i in {5, 6}:
+            cell.fill = FAIL_FILL if int(v) > cv_threshold else PASS_FILL
 
     ws.merge_cells("A7:H7")
 
@@ -494,7 +628,26 @@ def build_executive_dashboard(
         ("Total Checks Evaluated", f"{total_checks:,}", f"{total_screens} screens", "Across all screens"),
         ("Passed Checks (instances)", f"{total_pass:,}", "—", "PASS + Not Applicable"),
         ("Failed Checks (instances)", f"{total_fail:,}", "—", "Individual screen-check failures"),
-        ("Cannot Verify (instances)", f"{cannot_verify}", "—", "Requires manual/AT testing"),
+        ("Cannot Verify (checkpoints)", f"{cannot_verify_checkpoints}", "Primary KPI", "Distinct WCAG checkpoints still unresolved"),
+        ("Cannot Verify (instances)", f"{cannot_verify_instances}", "—", "Screen-level unresolved instances"),
+        (
+            f"CV Threshold Checkpoints (<= {cv_threshold})",
+            "PASS" if cv_checkpoint_ok else "FAIL",
+            f"{cannot_verify_checkpoints} <= {cv_threshold}",
+            "Threshold gate for checkpoint-level CV",
+        ),
+        (
+            f"CV Threshold Instances (<= {cv_threshold})",
+            "PASS" if cv_instance_ok else "FAIL",
+            f"{cannot_verify_instances} <= {cv_threshold}",
+            "Threshold gate for instance-level CV",
+        ),
+        (
+            f"CV Threshold Overall ({cv_metrics.get('enforcement', 'both')})",
+            "PASS" if cv_overall_ok else "FAIL",
+            "Both metrics enforced" if cv_metrics.get("enforcement", "both") == "both" else "Configured enforcement",
+            "Final threshold decision",
+        ),
         ("WCAG 2.1 AA Criteria Tested", f"{total_criteria}", "—", "Level A + Level AA"),
         ("Unique Criteria with Failures", f"{failing_criteria}", "—", "Distinct WCAG checkpoints failing"),
         ("Criteria Fully Passing", f"{passing_criteria}", f"{total_criteria} - {failing_criteria}", "No violations across any screen"),
@@ -510,6 +663,13 @@ def build_executive_dashboard(
         for c in range(1, 5):
             ws.cell(row, c).border = BORDER
             ws.cell(row, c).alignment = LEFT_ALIGN
+        if "CV Threshold" in metric:
+            value_cell = ws.cell(row, 2)
+            if value == "PASS":
+                value_cell.fill = PASS_FILL
+            elif value == "FAIL":
+                value_cell.fill = FAIL_FILL
+            value_cell.alignment = CENTER_ALIGN
 
     spacer_row = 11 + len(comp_data) + 2
     ws.merge_cells(f"A{spacer_row}:H{spacer_row}")
@@ -555,7 +715,7 @@ def build_executive_dashboard(
         elif top_severity == "Major":
             sev_cell.fill = WARN_FILL
 
-    col_widths = [22, 22, 14, 14, 14, 14, 14, 14]
+    col_widths = [24, 24, 16, 16, 18, 18, 14, 14]
     for i, w in enumerate(col_widths, 1):
         ws.column_dimensions[get_column_letter(i)].width = w
 
@@ -869,13 +1029,37 @@ def main() -> None:
         default=DEFAULT_APP_NAME,
         help="App/site name to show in the workbook title.",
     )
+    parser.add_argument(
+        "--cannot-verify-policy",
+        default="pass_leaning",
+        choices=["pass_leaning"],
+        help="Cannot verify resolution policy.",
+    )
+    parser.add_argument(
+        "--cv-threshold",
+        type=int,
+        default=31,
+        help="Threshold for Cannot Verify metrics.",
+    )
+    parser.add_argument(
+        "--cv-enforcement",
+        default="both",
+        choices=["both", "checkpoint", "instance"],
+        help="Threshold enforcement mode.",
+    )
     args = parser.parse_args()
 
     target_artifact_ids = args.target_artifacts
     output_file = Path(args.output)
     app_name = args.app_name
+    cannot_verify_policy = args.cannot_verify_policy
+    cv_threshold = int(args.cv_threshold)
+    cv_enforcement = args.cv_enforcement
 
-    unique_screens, all_issues, screen_issues, meta = build_data_model(target_artifact_ids=target_artifact_ids)
+    unique_screens, all_issues, screen_issues, meta = build_data_model(
+        target_artifact_ids=target_artifact_ids,
+        cannot_verify_policy=cannot_verify_policy,
+    )
 
     # Ensure no duplicate canonical screens are present
     seen = set()
@@ -893,9 +1077,17 @@ def main() -> None:
         s["screen_label"] = f"Screen-{i:02d} ({app_name})"
 
     wcag_failures = aggregate_failures_by_wcag(all_issues, unique_screens)
+    cv_metrics = compute_cv_metrics(unique_screens, cv_threshold, cv_enforcement)
 
     wb = openpyxl.Workbook()
-    build_executive_dashboard(wb, app_name, unique_screens, wcag_failures, meta["run_metadata"])
+    build_executive_dashboard(
+        wb,
+        app_name,
+        unique_screens,
+        wcag_failures,
+        meta["run_metadata"],
+        cv_metrics,
+    )
     build_screen_details(wb, unique_screens)
     build_failure_details(wb, unique_screens, all_issues)
     build_remediation_guide(wb, wcag_failures)
@@ -910,6 +1102,14 @@ def main() -> None:
     print(f"Target artifacts: {', '.join(target_artifact_ids)}")
     print(f"Unique screens: {len(unique_screens)}")
     print(f"Contains homepage: {any('initial-load' in canonical_screen_key(s['filename']) for s in unique_screens)}")
+    print(
+        "Cannot Verify metrics: "
+        f"checkpoints={cv_metrics['checkpoint_count']}, "
+        f"instances={cv_metrics['instance_count']}, "
+        f"threshold={cv_metrics['threshold']}, "
+        f"enforcement={cv_metrics['enforcement']}, "
+        f"within={cv_metrics['within_threshold']}"
+    )
 
 
 if __name__ == "__main__":

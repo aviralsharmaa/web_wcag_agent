@@ -111,16 +111,30 @@ def analyze_layout_perception(page: PageArtifact) -> list[CheckpointResult]:
             result("1.4.3", CheckpointStatus.CANNOT_VERIFY, page, "Contrast metrics unavailable for this page.")
         )
     elif contrast_violations:
+        measurable = [v.get("ratio") for v in contrast_violations if isinstance(v.get("ratio"), (int, float))]
+        worst_ratio = min(measurable) if measurable else None
+        ratio_note = f" Worst observed ratio: {worst_ratio}:1." if worst_ratio is not None else ""
         findings.append(
             result(
                 "1.4.3",
                 CheckpointStatus.FAIL,
                 page,
-                f"Detected {len(contrast_violations)} contrast violations from inline-style analysis.",
+                (
+                    f"Detected {len(contrast_violations)} text contrast violations "
+                    "(AA thresholds: 4.5:1 normal text, 3:1 large text)."
+                    f"{ratio_note}"
+                ),
             )
         )
     else:
-        findings.append(result("1.4.3", CheckpointStatus.PASS, page, "No contrast violations detected in analyzed styles."))
+        findings.append(
+            result(
+                "1.4.3",
+                CheckpointStatus.PASS,
+                page,
+                "No text contrast violations detected (AA thresholds: 4.5:1 normal text, 3:1 large text).",
+            )
+        )
 
     findings.append(_metric_result(page, "1.4.4", "resize_text_ok", "Resize text metric unavailable."))
     findings.append(_metric_result(page, "1.4.10", "reflow_ok", "Reflow metric unavailable."))
@@ -136,16 +150,19 @@ def analyze_layout_perception(page: PageArtifact) -> list[CheckpointResult]:
             )
         )
     elif non_text_violations:
+        measurable = [v.get("ratio") for v in non_text_violations if isinstance(v.get("ratio"), (int, float))]
+        worst_ratio = min(measurable) if measurable else None
+        ratio_note = f" Worst observed ratio: {worst_ratio}:1." if worst_ratio is not None else ""
         findings.append(
             result(
                 "1.4.11",
                 CheckpointStatus.FAIL,
                 page,
-                f"Detected {len(non_text_violations)} non-text contrast violations.",
+                f"Detected {len(non_text_violations)} non-text contrast violations (AA threshold: 3:1).{ratio_note}",
             )
         )
     else:
-        findings.append(result("1.4.11", CheckpointStatus.PASS, page, "No non-text contrast violations detected."))
+        findings.append(result("1.4.11", CheckpointStatus.PASS, page, "No non-text contrast violations detected (AA threshold: 3:1)."))
 
     findings.append(_metric_result(page, "1.4.12", "text_spacing_ok", "Text spacing metric unavailable."))
     findings.append(_metric_result(page, "1.4.13", "hover_focus_ok", "Hover/focus behavior metric unavailable."))

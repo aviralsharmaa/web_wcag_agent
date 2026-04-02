@@ -144,6 +144,7 @@ class PlaywrightFetcher(BaseFetcher):
         focus_visible_results = self._probe_focus_visibility(page)
         aria_live_regions = self._detect_live_regions(page)
         skip_link = self._probe_skip_link(page)
+        contrast_samples = self._probe_contrast_samples(page)
 
         interaction_metrics: dict[str, Any] = {
             "interactive_count": interactive_count,
@@ -167,7 +168,7 @@ class PlaywrightFetcher(BaseFetcher):
             html=html,
             title=title,
             links=list(links),
-            render_metrics=render_metrics,
+            render_metrics={**render_metrics, "computed_contrast_samples": contrast_samples},
             interaction_metrics=interaction_metrics,
             media_metadata={},
             screenshot_evidence_id=None,
@@ -299,6 +300,107 @@ class PlaywrightFetcher(BaseFetcher):
             return null;
         }""")
         return result
+
+    def _probe_contrast_samples(self, page) -> dict[str, list[dict[str, Any]]]:
+        """Collect rendered, computed-style samples for text and non-text contrast."""
+        return page.evaluate("""() => {
+            const toSelector = (el) => {
+                if (!el) return '';
+                if (el.id) return `#${el.id}`;
+                const cls = (typeof el.className === 'string' ? el.className.trim() : '')
+                    .split(/\\s+/).filter(Boolean).slice(0, 2).join('.');
+                return cls ? `${el.tagName.toLowerCase()}.${cls}` : el.tagName.toLowerCase();
+            };
+            const isVisible = (el) => {
+                if (!el) return false;
+                const r = el.getBoundingClientRect();
+                return r.width > 1 && r.height > 1;
+            };
+            const parseWeight = (raw) => {
+                const txt = `${raw || ''}`.trim().toLowerCase();
+                if (txt === 'bold') return 700;
+                if (txt === 'normal') return 400;
+                const v = parseInt(txt, 10);
+                return Number.isNaN(v) ? 400 : v;
+            };
+            const effectiveBackground = (el) => {
+                let cur = el;
+                while (cur) {
+                    const bg = getComputedStyle(cur).backgroundColor;
+                    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') return bg;
+                    cur = cur.parentElement;
+                }
+                return 'rgb(255, 255, 255)';
+            };
+
+            const text = [];
+            const textNodes = Array.from(document.querySelectorAll(
+                'p,span,a,button,label,li,td,th,h1,h2,h3,h4,h5,h6,input,textarea,select,[role="button"],[role="link"],[role="menuitem"]'
+            ));
+            for (const el of textNodes) {
+                if (text.length >= 260) break;
+                if (!isVisible(el)) continue;
+                const visibleText = (el.innerText || el.textContent || '').trim();
+                if (!visibleText) continue;
+
+                const cs = getComputedStyle(el);
+                const size = parseFloat(cs.fontSize) || 0;
+                const weight = parseWeight(cs.fontWeight);
+                const large = size >= 24 || (size >= 18.5 && weight >= 700);
+                const r = el.getBoundingClientRect();
+                text.push({
+                    selector: toSelector(el),
+                    text: visibleText.substring(0, 120),
+                    category: large ? 'large_text' : 'normal_text',
+                    foreground_color: cs.color,
+                    background_color: effectiveBackground(el),
+                    font_size_px: size,
+                    font_weight: weight,
+                    bbox: {
+                        x: Math.round(r.x),
+                        y: Math.round(r.y),
+                        width: Math.round(r.width),
+                        height: Math.round(r.height),
+                    },
+                });
+            }
+
+            const non_text = [];
+            const nonTextNodes = Array.from(document.querySelectorAll(
+                'button,input,select,textarea,a,[role="button"],[role="link"],[role="checkbox"],[role="radio"],[role="switch"],[role="tab"],svg,canvas'
+            ));
+            for (const el of nonTextNodes) {
+                if (non_text.length >= 220) break;
+                if (!isVisible(el)) continue;
+
+                const cs = getComputedStyle(el);
+                const borderW = parseFloat(cs.borderWidth) || 0;
+                const fg = borderW > 0 ? cs.borderColor : cs.backgroundColor;
+                if (!fg || fg === 'rgba(0, 0, 0, 0)' || fg === 'transparent') continue;
+
+                const role = (el.getAttribute('role') || '').toLowerCase();
+                const tag = el.tagName.toLowerCase();
+                const isUi = ['button', 'input', 'select', 'textarea', 'a'].includes(tag) || (
+                    role && ['button', 'link', 'checkbox', 'radio', 'switch', 'tab'].includes(role)
+                );
+                const r = el.getBoundingClientRect();
+                non_text.push({
+                    selector: toSelector(el),
+                    category: isUi ? 'ui_component' : 'graphical_object',
+                    foreground_color: fg,
+                    background_color: effectiveBackground(el),
+                    font_size_px: null,
+                    font_weight: null,
+                    bbox: {
+                        x: Math.round(r.x),
+                        y: Math.round(r.y),
+                        width: Math.round(r.width),
+                        height: Math.round(r.height),
+                    },
+                });
+            }
+            return { text, non_text };
+        }""") or {"text": [], "non_text": []}
 
     def _detect_trap(self, focus_trail: list[dict], interactive_count: int) -> bool:
         """Heuristic: if we could only tab to < 20% of interactive elements, likely a trap."""

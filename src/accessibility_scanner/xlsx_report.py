@@ -1,4 +1,4 @@
-"""Generate a structured XLSX report for WCAG 2.1 accessibility audit results."""
+"""Generate a structured XLSX report for WCAG A/AA (Expanded) audit results."""
 from __future__ import annotations
 
 from typing import Any
@@ -6,9 +6,11 @@ from typing import Any
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from .checkpoints import CHECKPOINTS
 
 
-# ── Full WCAG 2.1 guideline metadata (55 criteria) ──────────────────────
+# ── Expanded WCAG A/AA guideline metadata (56 criteria) ──────────────────
+REPORT_STANDARD = "WCAG A/AA (Expanded)"
 WCAG_GUIDELINES: list[dict[str, str]] = [
     {"id": "1.1.1", "title": "Non-text Content", "level": "A",
      "requirement": "All non-text content has a text alternative that serves the equivalent purpose."},
@@ -116,6 +118,8 @@ WCAG_GUIDELINES: list[dict[str, str]] = [
      "requirement": "Information previously entered by or provided to the user is auto-populated or available for selection."},
     {"id": "3.3.8", "title": "Accessible Authentication (Minimum)", "level": "AA",
      "requirement": "A cognitive function test is not required for any step in an authentication process unless an alternative is provided."},
+    {"id": "4.1.1", "title": "Parsing", "level": "A",
+     "requirement": "Elements have complete start/end tags, are properly nested, and contain no duplicate attributes/IDs that break parsing."},
     {"id": "4.1.2", "title": "Name, Role, Value", "level": "A",
      "requirement": "For all UI components, the name and role can be programmatically determined; states, properties, and values can be programmatically set."},
     {"id": "4.1.3", "title": "Status Messages", "level": "AA",
@@ -165,6 +169,80 @@ def _auto_width(ws, min_width: int = 12, max_width: int = 55):
         ws.column_dimensions[col_letter].width = max_len + 2
 
 
+def _validate_guideline_sync() -> None:
+    runtime_ids = {meta.checkpoint_id for meta in CHECKPOINTS}
+    guideline_ids = {item["id"] for item in WCAG_GUIDELINES}
+    missing = sorted(runtime_ids - guideline_ids)
+    extra = sorted(guideline_ids - runtime_ids)
+    if missing or extra:
+        raise ValueError(
+            f"Guideline/checkpoint mismatch. Missing in XLSX metadata: {missing}. Extra in XLSX metadata: {extra}."
+        )
+
+
+def _reduce_status(statuses: list[str]) -> str:
+    if not statuses:
+        return "Not evaluated"
+    if "Fail" in statuses:
+        return "Fail"
+    if "Cannot verify automatically" in statuses:
+        return "Cannot verify automatically"
+    if all(item == "Not applicable" for item in statuses):
+        return "Not applicable"
+    if "Pass" in statuses:
+        return "Pass"
+    return "Not evaluated"
+
+
+def _aggregate_checkpoint_rows(report: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    grouped: dict[str, list[dict[str, str]]] = {}
+    for screen in report.get("screens", []):
+        screen_url = screen.get("url", "")
+        for row in screen.get("wcag_results", []):
+            checkpoint_id = row.get("checkpoint_id", "")
+            if not checkpoint_id:
+                continue
+            grouped.setdefault(checkpoint_id, []).append(
+                {
+                    "status": row.get("status", ""),
+                    "rationale": row.get("rationale", ""),
+                    "page": screen_url,
+                }
+            )
+
+    aggregate: dict[str, dict[str, Any]] = {}
+    for checkpoint_id, rows in grouped.items():
+        statuses = [r["status"] for r in rows]
+        resolved_status = _reduce_status(statuses)
+
+        rationale = ""
+        for row in rows:
+            if row["status"] == resolved_status and row["rationale"]:
+                rationale = row["rationale"]
+                break
+        if not rationale:
+            for row in rows:
+                if row["rationale"]:
+                    rationale = row["rationale"]
+                    break
+
+        pages = []
+        for row in rows:
+            if row["status"] == resolved_status and row["page"] not in pages:
+                pages.append(row["page"])
+        if not pages:
+            for row in rows:
+                if row["page"] not in pages:
+                    pages.append(row["page"])
+
+        aggregate[checkpoint_id] = {
+            "status": resolved_status,
+            "rationale": rationale,
+            "pages": pages,
+        }
+    return aggregate
+
+
 def generate_xlsx_report(report: dict[str, Any], output_path: str) -> str:
     """Generate a structured XLSX from the agentic scan report dict.
 
@@ -175,7 +253,9 @@ def generate_xlsx_report(report: dict[str, Any], output_path: str) -> str:
     Returns:
         The output_path string.
     """
+    _validate_guideline_sync()
     wb = Workbook()
+    checkpoint_agg = _aggregate_checkpoint_rows(report)
 
     # ── Sheet 1: Summary ──────────────────────────────────────────────
     ws_summary = wb.active
@@ -184,14 +264,57 @@ def generate_xlsx_report(report: dict[str, Any], output_path: str) -> str:
     _style_header_row(ws_summary, 2)
 
     totals = report.get("totals", {})
+    cv_instance_total = totals.get("cannot_verify", 0)
+    cv_checkpoint_total = sum(
+        1 for item in checkpoint_agg.values() if item.get("status") == "Cannot verify automatically"
+    )
+    cv_threshold = (
+        report.get("cannot_verify_metrics", {}).get("threshold")
+        or report.get("cannot_verify_threshold")
+        or 31
+    )
+    cv_checkpoint_ok = cv_checkpoint_total <= cv_threshold
+    cv_instance_ok = cv_instance_total <= cv_threshold
+    cv_enforcement = (
+        report.get("cannot_verify_metrics", {}).get("enforcement")
+        or report.get("cannot_verify_enforcement")
+        or "both"
+    )
+    if cv_enforcement == "checkpoint":
+        cv_within = cv_checkpoint_ok
+    elif cv_enforcement == "instance":
+        cv_within = cv_instance_ok
+    else:
+        cv_within = cv_checkpoint_ok and cv_instance_ok
+
     ws_summary.append(["Run ID", report.get("run_id", "")])
     ws_summary.append(["Config", report.get("config", "")])
+    ws_summary.append(["Standard", report.get("standard", REPORT_STANDARD)])
+    ws_summary.append(["Scan Mode", report.get("scan_mode", "full_scan")])
+    ws_summary.append(["Cannot Verify Policy", report.get("cannot_verify_policy", "pass_leaning")])
+    ws_summary.append(["Cannot Verify Enforcement", cv_enforcement])
     ws_summary.append(["Screens Analyzed", report.get("screens_analyzed", 0)])
     ws_summary.append(["URLs Visited", len(report.get("urls_visited", []))])
     ws_summary.append(["Total PASS", totals.get("pass", 0)])
     ws_summary.append(["Total FAIL", totals.get("fail", 0)])
-    ws_summary.append(["Total CANNOT VERIFY", totals.get("cannot_verify", 0)])
+    ws_summary.append(["Total CANNOT VERIFY (Instances)", cv_instance_total])
+    ws_summary.append(["Total CANNOT VERIFY (Checkpoints)", cv_checkpoint_total])
+    ws_summary.append(["CV Threshold (<=)", cv_threshold])
+    ws_summary.append(["CV Threshold Checkpoints", "PASS" if cv_checkpoint_ok else "FAIL"])
+    ws_summary.append(["CV Threshold Instances", "PASS" if cv_instance_ok else "FAIL"])
+    ws_summary.append(["CV Threshold Overall", "PASS" if cv_within else "FAIL"])
     ws_summary.append(["Unique Failures", len(report.get("all_failures", []))])
+
+    for row in range(2, ws_summary.max_row + 1):
+        metric = ws_summary.cell(row=row, column=1).value
+        if metric in {"CV Threshold Checkpoints", "CV Threshold Instances", "CV Threshold Overall"}:
+            value_cell = ws_summary.cell(row=row, column=2)
+            value = str(value_cell.value or "")
+            if value == "PASS":
+                value_cell.fill = _PASS_FILL
+            elif value == "FAIL":
+                value_cell.fill = _FAIL_FILL
+            value_cell.alignment = Alignment(horizontal="center")
     _auto_width(ws_summary)
 
     # ── Sheet 2: WCAG Guidelines ──────────────────────────────────────
@@ -203,26 +326,7 @@ def generate_xlsx_report(report: dict[str, Any], output_path: str) -> str:
     ws_wcag.append(headers)
     _style_header_row(ws_wcag, len(headers))
 
-    # Build a lookup from the per-screen WCAG results
-    # Key: checkpoint_id → aggregated status, rationale, pages
-    checkpoint_agg: dict[str, dict[str, Any]] = {}
-    for screen in report.get("screens", []):
-        screen_url = screen.get("url", "")
-        for r in screen.get("wcag_summary", {}).get("failures", []):
-            cp_id = r.get("checkpoint", "")
-            if cp_id not in checkpoint_agg:
-                checkpoint_agg[cp_id] = {
-                    "status": "Fail",
-                    "rationale": r.get("rationale", ""),
-                    "pages": [],
-                }
-            checkpoint_agg[cp_id]["pages"].append(screen_url)
-
-    # Also pull from flat wcag_results per screen for pass/cv/na
-    for screen in report.get("screens", []):
-        screen_url = screen.get("url", "")
-        # wcag_results might not be in the lightweight report screens
-        # so we work with what we have
+    # Build a lookup from full per-screen wcag_results.
 
     for guideline in WCAG_GUIDELINES:
         gid = guideline["id"]
@@ -295,6 +399,81 @@ def generate_xlsx_report(report: dict[str, Any], output_path: str) -> str:
             cell.border = _THIN_BORDER
 
     _auto_width(ws_screens)
+
+    checklist_rollup = report.get("checklist_rollup", [])
+    if checklist_rollup:
+        ws_checklists = wb.create_sheet("Checklist Detail")
+        checklist_headers = [
+            "SC ID",
+            "Title",
+            "Level",
+            "Aggregate Status",
+            "Screens",
+            "Pages",
+            "Agent Goal",
+            "Required Evidence For LLM",
+            "Machine Pass Criteria",
+            "Failure Heuristics / Flags",
+        ]
+        ws_checklists.append(checklist_headers)
+        _style_header_row(ws_checklists, len(checklist_headers))
+
+        for item in checklist_rollup:
+            row_num = ws_checklists.max_row + 1
+            ws_checklists.append(
+                [
+                    item.get("sc_id", ""),
+                    item.get("sc_title", ""),
+                    item.get("level", ""),
+                    item.get("aggregate_status", ""),
+                    len(item.get("screen_evaluations", [])),
+                    "; ".join(item.get("pages", [])[:5]),
+                    item.get("automated_agent_goal", ""),
+                    item.get("required_evidence_for_llm", ""),
+                    item.get("machine_pass_criteria", ""),
+                    item.get("failure_heuristics_flags", ""),
+                ]
+            )
+            fill = _STATUS_FILLS.get(item.get("aggregate_status", ""))
+            if fill:
+                ws_checklists.cell(row=row_num, column=4).fill = fill
+
+        for row in ws_checklists.iter_rows(min_row=2, max_row=ws_checklists.max_row):
+            for cell in row:
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
+                cell.border = _THIN_BORDER
+        _auto_width(ws_checklists)
+
+    # ── Sheet 4: Route Log ────────────────────────────────────────────
+    route_log = report.get("route_log", [])
+    if route_log:
+        ws_routes = wb.create_sheet("Route Log")
+        route_headers = [
+            "#", "Event Type", "Source", "From URL", "To URL",
+            "Target URL", "Description", "Element Text", "Changed URL",
+        ]
+        ws_routes.append(route_headers)
+        _style_header_row(ws_routes, len(route_headers))
+
+        for idx, event in enumerate(route_log, 1):
+            ws_routes.append([
+                idx,
+                event.get("event_type", ""),
+                event.get("source", ""),
+                event.get("from_url", ""),
+                event.get("to_url", ""),
+                event.get("target_url", ""),
+                event.get("description", ""),
+                event.get("element_text", ""),
+                "Yes" if event.get("url_changed") else "No",
+            ])
+
+        for row in ws_routes.iter_rows(min_row=2, max_row=ws_routes.max_row):
+            for cell in row:
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
+                cell.border = _THIN_BORDER
+
+        _auto_width(ws_routes)
 
     # ── Save ──────────────────────────────────────────────────────────
     wb.save(output_path)

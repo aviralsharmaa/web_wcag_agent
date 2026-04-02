@@ -61,7 +61,14 @@
     "screenshot_each_step": true,
     "run_wcag_buckets": true,
     "explore_all_routes": true,
-    "max_explore_depth": 60,
-    "max_screens": 50
+    "max_explore_depth": 600,
+    "max_screens": 200,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 40,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both"
   }
 }
