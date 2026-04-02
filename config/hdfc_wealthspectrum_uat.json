@@ -1,0 +1,74 @@
+{
+  "name": "HDFC WealthSpectrum UAT Login + Dashboard",
+  "app_id": "HDFCWSUAT",
+  "start_url": "https://wsuat.hdfcsec.com/wealthspectrum/portal/sign-in",
+  "domain": "wsuat.hdfcsec.com",
+  "flow_steps": [
+    {
+      "id": "login_screen",
+      "description": "Sign-in page — enter user name/email and password",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[autocomplete='username'], input[type='email'], input[placeholder*='User'], input[placeholder*='Email'], input[aria-label*='User'], input[aria-label*='Email'], input[name*='user'], input[name*='email'], input[id*='user'], input[id*='email'], input:not([type='password']):visible",
+          "value": "DUMMYUAT",
+          "description": "Enter User Name / Email"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[autocomplete='current-password'], input[placeholder*='Password'], input[aria-label*='Password'], input[name*='password'], input[id*='password']",
+          "value": "Hsl@1234",
+          "description": "Enter Password"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Sign In'), button:text-is('Sign In'), button[type='submit'], input[type='submit'][value='Sign In']",
+          "description": "Click Sign In on the login page"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "otp_screen",
+      "description": "OTP page — wait for manual OTP entry and post-login redirect",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "User enters OTP manually and clicks Sign In",
+          "instructions": "When the OTP screen appears, enter the OTP manually in the browser and click Sign In. The scan will resume automatically after the dashboard loads.",
+          "completion_url_contains": "/wealthspectrum/portal/client-dashboard/",
+          "expected_url": "https://wsuat.hdfcsec.com/wealthspectrum/portal/client-dashboard/G/100001",
+          "timeout_ms": 300000,
+          "poll_interval_ms": 1000,
+          "stable_wait_ms": 2500
+        }
+      ],
+      "wait_after": 4000
+    },
+    {
+      "id": "dashboard_explore",
+      "description": "Explore all reachable routes after login via LLM-guided routing",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore menus, tabs, cards, charts, detail pages, modals, and every reachable dashboard route"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 600,
+    "max_screens": 200,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 40,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both"
+  }
+}

@@ -11,6 +11,9 @@ APP_CONFIG_MAP = {
     "LICMFIP": "config/licmf_investor_portal.json",
     "LICMFCW": "config/licmf_corporate_website.json",
     "HDFCSKY": "config/hdfc_sky_login.json",
+    "HDFCWSUAT": "config/hdfc_wealthspectrum_uat.json",
+    "KSLNEO": "config/ksl_neo.json",
+    "KSLKINSITE": "config/ksl_kinsite.json",
 }
 
 
@@ -30,9 +33,21 @@ def main():
     )
     parser.add_argument("--artifacts-root", default="artifacts", help="Artifacts directory")
     parser.add_argument("--headless", action="store_true", help="Run in headless mode")
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument(
+        "--pre-login",
+        action="store_true",
+        help="Run only pre-login/authentication screens and skip post-login exploration",
+    )
+    mode_group.add_argument(
+        "--full-scan",
+        action="store_true",
+        help="Run the complete configured flow, including post-login exploration",
+    )
     args = parser.parse_args()
 
     config_path = args.config or APP_CONFIG_MAP[args.app]
+    scan_mode = "pre_login" if args.pre_login else "full_scan"
 
     from .flow_runner import AgenticFlowRunner
 
@@ -40,6 +55,7 @@ def main():
         config_path=config_path,
         artifacts_root=args.artifacts_root,
         headless=args.headless,
+        scan_mode=scan_mode,
     )
     report = runner.run()
 

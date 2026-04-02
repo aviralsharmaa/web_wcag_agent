@@ -22,12 +22,15 @@ class DeterministicWorkerSuite:
 
     def enrich_page(self, artifact: PageArtifact) -> PageArtifact:
         axe_results = self.axe.analyze(artifact.html)
-        contrast = self.contrast.analyze(artifact.html)
+        computed_samples = artifact.render_metrics.get("computed_contrast_samples")
+        contrast = self.contrast.analyze(artifact.html, computed_samples=computed_samples if isinstance(computed_samples, dict) else None)
         parsing = self.parser.analyze(artifact.html)
         media = self.media.analyze(artifact.html)
         text_images = self.ocr.detect_candidates(artifact.html)
 
         render_metrics = self.css.analyze(artifact.render_metrics)
+        render_metrics.setdefault("contrast_samples", contrast.text_samples)
+        render_metrics.setdefault("non_text_contrast_samples", contrast.non_text_samples)
         render_metrics.setdefault("contrast_violations", contrast.violations)
         render_metrics.setdefault("non_text_contrast_violations", contrast.non_text_violations)
         render_metrics.setdefault("ocr_text_image_candidates", text_images)

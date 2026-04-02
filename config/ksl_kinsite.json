@@ -1,0 +1,131 @@
+{
+  "name": "KSL Kinsite Login + Authenticated Exploration",
+  "app_id": "KSLKINSITE",
+  "start_url": "https://kie.kotak.com/kinsite",
+  "domain": "kie.kotak.com",
+  "flow_steps": [
+    {
+      "id": "login_screen",
+      "description": "Open the Kinsite login form and submit the provided credentials",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='email'], input[autocomplete='username'], input[name*='user' i], input[name*='email' i], input[id*='user' i], input[id*='email' i], input[placeholder*='user' i], input[placeholder*='email' i], input[aria-label*='user' i], input[aria-label*='email' i], input:not([type='password']):visible",
+          "value": "ayush@onfinance.in",
+          "description": "Enter the Kinsite user name / email"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[autocomplete='current-password'], input[name*='password' i], input[id*='password' i], input[placeholder*='password' i], input[aria-label*='password' i]",
+          "value": "Ayush@123",
+          "description": "Enter the Kinsite password"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Sign In'), button:has-text('Login'), button:has-text('Log In'), button[type='submit'], input[type='submit'], [role='button']:has-text('Sign In')",
+          "description": "Submit the Kinsite login form"
+        }
+      ],
+      "wait_after": 6000
+    },
+    {
+      "id": "post_auth_manual_recovery",
+      "description": "Allow manual intervention for MFA, captcha, consent, or redirect issues before exploration",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "If authentication needs user intervention, complete it manually and let the scan resume",
+          "instructions": "If captcha, MFA, consent, SSO confirmation, or a broken redirect blocks automation, complete the login manually in the open browser. The scanner will resume once a post-login screen is visible, and all user-driven route changes during this step will still be recorded for reporting.",
+          "completion_mode": "all",
+          "completion_url_regex": "(?i)^https://kie\\.kotak\\.com/kinsite(?!/?$)(?!.*(?:login|signin|sign-in|auth|logout)).+",
+          "completion_url_not_contains": [
+            "login",
+            "signin",
+            "sign-in",
+            "auth",
+            "logout"
+          ],
+          "timeout_ms": 360000,
+          "poll_interval_ms": 1000,
+          "stable_wait_ms": 3000
+        }
+      ],
+      "wait_after": 4000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore the authenticated Kinsite experience across menus, tabs, reports, settings, and detail pages",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore the authenticated Kinsite application deeply, covering dashboards, menus, reports, transactions, profile/settings, support/help, popups, drawers, tables, filters, and nested detail views"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 900,
+    "max_screens": 300,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 60,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 240000,
+    "manual_assist_idle_ms": 25000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a real authenticated Kinsite user. Prioritize the main business workflow areas first: dashboard, portfolio views, transactions, reports, statements, profile/account, settings, help/support, and detail pages opened from tables, cards, and summaries. Explore major sections the way a human would, not just any clickable label.",
+      "major_sections": [
+        "dashboard",
+        "portfolio",
+        "transactions",
+        "reports",
+        "statements",
+        "profile",
+        "account",
+        "settings",
+        "help",
+        "support"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "portfolio",
+        "transaction",
+        "report",
+        "statement",
+        "profile",
+        "account",
+        "settings",
+        "support",
+        "holding",
+        "summary",
+        "details"
+      ],
+      "avoid_tokens": [
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal",
+        "faq",
+        "logout",
+        "sign out"
+      ],
+      "journey_rules": [
+        "Open at least one detail row from each major table or card-based section before leaving it.",
+        "After reaching a dashboard or report section, inspect sibling tabs, date filters, drawers, and related detail views.",
+        "Prefer authenticated business workflows over generic help or legal routes once logged in."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both"
+  }
+}
