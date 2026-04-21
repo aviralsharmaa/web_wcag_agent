@@ -72,9 +72,10 @@ class LLMRouter:
         user_msg = (
             f"Current URL: {current_url}\n"
             f"Page description: {page_description}\n"
-            f"Already visited: {json.dumps(visited_urls[-20:])}\n\n"
+            f"Already visited ({len(visited_urls)} total, showing last 60): {json.dumps(visited_urls[-60:])}\n\n"
             f"Interactive elements on page:\n{elements_text}\n\n"
-            "What should I do next?"
+            "What should I do next? IMPORTANT: Do NOT navigate to any URL already in the 'Already visited' list. "
+            "Look for unexplored links or sections."
         )
 
         self._history.append({"role": "user", "content": user_msg})

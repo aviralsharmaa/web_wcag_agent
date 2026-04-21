@@ -2,18 +2,25 @@
   "name": "LICMF Corporate Website (Experience Beta)",
   "app_id": "LICMFCW",
   "start_url": "https://experiencebeta.licmf.com/",
-  "domain": "experiencebeta.licmf.com",
+  "domain": "licmf.com",
   "flow_steps": [
     {
+      "id": "landing",
+      "description": "Landing page scan",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
       "id": "site_explore",
-      "description": "No-login site exploration for all reachable pages/routes",
+      "description": "Deep exploration of all reachable pages/routes",
+      "scan_scope": "pre_login",
       "actions": [
         {
           "type": "explore",
-          "description": "Explore all reachable screens, menus, tabs, modals, and footer pages without login"
+          "description": "Explore ALL pages thoroughly: Our Funds, LIC MF Connect (Deep Dive: FAQs, SIP, Passive Funds, Start a SIP, Asset Allocation, Jargons, Mutual Fund Guide, Unclaimed MF), Markets (Monthly Market Updates), Calculators (SIP Return, SIP-O-Meter, Future Value, SIP Delay, Retirement, Dream Holiday, Child Education, Target Goal, Wealth Creation, Step Up), Why we're Different, Goals (Children Fund, Wealth Creation, Income Generation), Investor Services, KYC Corner, Downloads, Open An Account, Investor Login page, footer links, and any other reachable routes"
         }
-      ],
-      "wait_after": 3000
+      ]
     }
   ],
   "analysis": {
@@ -21,7 +28,18 @@
     "screenshot_each_step": true,
     "run_wcag_buckets": true,
     "explore_all_routes": true,
-    "max_explore_depth": 100,
-    "max_screens": 80
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
   }
 }

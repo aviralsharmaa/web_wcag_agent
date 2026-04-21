@@ -1,0 +1,134 @@
+{
+  "name": "Tata PMS - Portfolio Management Services",
+  "app_id": "TATAPMS",
+  "start_url": "https://tatapms.com/",
+  "domain": "tatapms.com",
+  "flow_steps": [
+    {
+      "id": "homepage",
+      "description": "Scan the Tata PMS homepage (main sections: About, What We Do, USPs, Complaint, ODRP)",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "blogs",
+      "description": "Blogs page",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://tatapms.com/Blogs.aspx",
+          "description": "Navigate to Blogs page"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "pe_funding_blog",
+      "description": "PE Funding Blog page",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://tatapms.com/PE_funding_Blogs.aspx",
+          "description": "Navigate to PE Funding Blog page"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "section_about",
+      "description": "Homepage section: About Tata Asset Management",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://tatapms.com/#About-Tata-Asset-Management",
+          "description": "Navigate to About section"
+        }
+      ],
+      "wait_after": 2000
+    },
+    {
+      "id": "section_what_we_do",
+      "description": "Homepage section: What We Do",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://tatapms.com/#What-We-Do",
+          "description": "Navigate to What We Do section"
+        }
+      ],
+      "wait_after": 2000
+    },
+    {
+      "id": "section_usps",
+      "description": "Homepage section: Our USPs",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://tatapms.com/#Our-USP's",
+          "description": "Navigate to Our USPs section"
+        }
+      ],
+      "wait_after": 2000
+    },
+    {
+      "id": "section_complaint",
+      "description": "Homepage section: Raise A Complaint form",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://tatapms.com/#Raise-A-Complaint",
+          "description": "Navigate to Complaint section"
+        }
+      ],
+      "wait_after": 2000
+    },
+    {
+      "id": "section_odrp",
+      "description": "Homepage section: Online Dispute Resolution Portal",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://tatapms.com/#ODRP",
+          "description": "Navigate to ODRP section"
+        }
+      ],
+      "wait_after": 2000
+    },
+    {
+      "id": "client_login_portal",
+      "description": "Client Login Portal page",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://portal.tatapms.com/portal/clientlogin.aspx",
+          "description": "Navigate to client login portal"
+        }
+      ],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "max_screens": 100,
+    "max_consecutive_failures": 20,
+    "unique_screen_dedup": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

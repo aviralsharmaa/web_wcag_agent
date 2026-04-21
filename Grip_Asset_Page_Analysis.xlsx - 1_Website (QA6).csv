@@ -1,0 +1,124 @@
+Asset Analysis — Grip Invest Website (QA6),,,,,,,
+,,,,,,,
+BASIC INFORMATION,,,,,,,
+Application,Grip Invest Website,,,,,,
+Platform,Web (React / Next.js — hosted on AWS),,,,,,
+QA6 (Test) URL,https://qa6.gripinvest.in,,,,,,
+Production URL,https://www.gripinvest.in,,,,,,
+Functional SPOC,Grip Product Team,,,,,,
+IT / Dev SPOC,product@gripinvest.in,,,,,,
+SEBI Reg.,SEBI OBPP — INZ000312836 | Grip Broking Pvt Ltd | NSE Member Code: 90319,,,,,,
+1st Scan,Pending,,,,,,
+Total Pages,51,,,,,,
+CREDENTIALS,,,,,,,
+Primary,"QA6 URL: https://qa6.gripinvest.in
+Test User: Register with any Indian mobile number on QA6 (OTP delivered to mobile)
+PAN for KYC testing: Use sandbox / dummy PAN provided by Grip QA team
+Bank: Use Grip QA sandbox bank account credentials
+Demat: CDSL test account — DP ID + Client ID from QA team
+Support: invest@gripinvest.in",,,,,,
+,,,,,,,
+DETAILED UAT / TEST LOGINS,,,,,,,
+#,Login Type,Credentials,URL / Notes,,,,
+1,New User (No KYC),"Mobile: QA test number
+OTP: from QA team",https://qa6.gripinvest.in/login,,,,
+2,KYC Complete User,PAN + Bank + Demat from QA team,https://qa6.gripinvest.in/login,,,,
+3,KYC Pending User,Use Grip QA test account (mid-KYC),https://qa6.gripinvest.in/login,,,,
+,,,,,,,
+PAGE ANALYSIS SUMMARY,,,,,,,
+Total Pages,51,,,,,,
+P0 Critical,17,,,,,,
+P1 High,21,,,,,,
+P2 Medium,13,,,,,,
+P3 Low,0,,,,,,
+Categories,9,,,,,,
+,,,,,,,
+CATEGORY BREAKDOWN,,,,,,,
+#,Category,Count,% Total,,,,
+1,Authentication,4,8%,,,,
+2,Onboarding / KYC,10,20%,,,,
+3,Home / Explore,4,8%,,,,
+4,Deal Pages,10,20%,,,,
+5,Baskets,4,8%,,,,
+6,Marketplace,4,8%,,,,
+7,Portfolio,6,12%,,,,
+8,Account / Profile,6,12%,,,,
+9,Static / Legal,3,6%,,,,
+,,,,,,,
+COMPLETE PAGE INVENTORY,,,,,,,
+#,Route / Screen,Description,Full URL / Deep Link,Category,Priority,Audit Status,Notes
+1,/login,Login — Mobile Number Entry,https://qa6.gripinvest.in/login,Authentication,P0,Pending,"Primary entry; validate OTP flow, login with Google/Apple"
+2,/login → OTP,"OTP Verification (6-digit, auto-read)",https://qa6.gripinvest.in/login (OTP step),Authentication,P0,Pending,"Test resend, expiry (2 min), wrong OTP error states"
+3,/signup,New User Sign Up — Name + Email,https://qa6.gripinvest.in/signup,Authentication,P0,Pending,Post OTP for new users; shown only once
+4,/auth/google,Login with Google (OAuth),https://qa6.gripinvest.in/auth/google,Authentication,P1,Pending,Test Google OAuth callback and session handling
+5,/onboarding/pan,PAN Card Verification,https://qa6.gripinvest.in/onboarding/pan,Onboarding / KYC,P0,Pending,"Entry of PAN; validate NSDL check, name match"
+6,/onboarding/aadhaar,Aadhaar KYC (DigiLocker / OTP-based),https://qa6.gripinvest.in/onboarding/aadhaar,Onboarding / KYC,P0,Pending,Test DigiLocker redirect + OTP Aadhaar flows
+7,/onboarding/personal-details,"Personal Details — DOB, Gender, Address",https://qa6.gripinvest.in/onboarding/personal-details,Onboarding / KYC,P0,Pending,Auto-fill from Aadhaar; allow manual override
+8,/onboarding/bank,Bank Account Details (IFSC + Account No.),https://qa6.gripinvest.in/onboarding/bank,Onboarding / KYC,P0,Pending,Validate penny drop / bank verification flow
+9,/onboarding/demat,Demat Account Linking (CDSL / NSDL DP ID + Client),https://qa6.gripinvest.in/onboarding/demat,Onboarding / KYC,P0,Pending,Critical — investments credited to demat; test both CDSL & NSDL
+10,/onboarding/selfie,Selfie / Face Match Verification,https://qa6.gripinvest.in/onboarding/selfie,Onboarding / KYC,P1,Pending,"Test camera permission, liveness check, retry states"
+11,/onboarding/kyc-pending,KYC Under Review / Pending Screen,https://qa6.gripinvest.in/onboarding/kyc-pending,Onboarding / KYC,P1,Pending,Shown when manual review is triggered; test email nudge
+12,/onboarding/kyc-rejected,KYC Rejected — Reason + Retry CTA,https://qa6.gripinvest.in/onboarding/kyc-rejected,Onboarding / KYC,P1,Pending,Validate clear rejection reason messaging
+13,/onboarding/kyc-success,KYC Complete — Welcome Screen,https://qa6.gripinvest.in/onboarding/kyc-success,Onboarding / KYC,P2,Pending,Celebrate screen; CTA to explore deals
+14,/onboarding/nominee,Nominee Details Entry,https://qa6.gripinvest.in/onboarding/nominee,Onboarding / KYC,P2,Pending,Optional during onboarding; also accessible from profile
+15,/,Home — Logged-In Dashboard,https://qa6.gripinvest.in/,Home / Explore,P0,Pending,"Shows portfolio summary, live deals banner, notifications"
+16,/explore,Explore Live Deals — All Products,https://qa6.gripinvest.in/explore,Home / Explore,P0,Pending,"Core browse screen; test filter (type, tenor, yield), sort, search"
+17,/explore?type=amo,AMO (After Market Orders) Deals Section,https://qa6.gripinvest.in/explore?type=amo,Home / Explore,P1,Pending,24×7 investing; validate AMO badge and order timing rules
+18,/explore/search,Search / Filter Results,https://qa6.gripinvest.in/explore/search,Home / Explore,P1,Pending,"Test search by issuer name, ISIN, product type"
+19,/bond/{slug},Corporate Bond Detail Page,https://qa6.gripinvest.in/bond/[issuer-slug],Deal Pages,P0,Pending,"Returns, rating (CRISIL/ICRA), issuer profile, docs, invest CTA"
+20,/loanx/{slug},LoanX SDI Deal Detail,https://qa6.gripinvest.in/loanx/[deal-slug],Deal Pages,P0,Pending,"Pool composition, underlying NBFC, cash-flow waterfall, docs"
+21,/leasex/{slug},LeaseX SDI Deal Detail,https://qa6.gripinvest.in/leasex/[deal-slug],Deal Pages,P0,Pending,"Asset details, lessee, depreciation schedule, security cover"
+22,/invoicex/{slug},InvoiceX SDI Deal Detail,https://qa6.gripinvest.in/invoicex/[deal-slug],Deal Pages,P1,Pending,"Invoice pool, anchor companies, yield calc"
+23,/fd/{slug},High-Yield FD Deal Detail,https://qa6.gripinvest.in/fd/[issuer-slug],Deal Pages,P0,Pending,"NBFC FD with interest schedule, TDS details"
+24,/invest/{slug}/amount,Invest Now — Amount Entry,https://qa6.gripinvest.in/invest/[slug]/amount,Deal Pages,P0,Pending,"Validate min invest (₹1,000), lot size, available units"
+25,/invest/{slug}/review,Investment Review / Order Summary,https://qa6.gripinvest.in/invest/[slug]/review,Deal Pages,P0,Pending,Full order card before payment; test edit flow
+26,/invest/{slug}/payment,Payment Gateway (UPI / Net Banking / NACH),https://qa6.gripinvest.in/invest/[slug]/payment,Deal Pages,P0,Pending,P0 — revenue critical; test all payment modes + timeout
+27,/invest/{slug}/success,Investment Confirmed — Success Screen,https://qa6.gripinvest.in/invest/[slug]/success,Deal Pages,P0,Pending,NSE order confirmation; demat credit timeline shown
+28,/invest/{slug}/failure,Payment Failed / Retry Screen,https://qa6.gripinvest.in/invest/[slug]/failure,Deal Pages,P1,Pending,Validate retry flow + refund initiation messaging
+29,/baskets,Baskets Listing — Theme-Based Invest,https://qa6.gripinvest.in/baskets,Baskets,P0,Pending,"Industry-first feature; filter by theme, yield, tenor"
+30,/baskets/{slug},Basket Detail — Holdings & Returns,https://qa6.gripinvest.in/baskets/[slug],Baskets,P0,Pending,"Shows constituent deals, blended yield, rebalance history"
+31,/baskets/{slug}/invest,Basket Invest — Amount + Allocation,https://qa6.gripinvest.in/baskets/[slug]/invest,Baskets,P1,Pending,One-click invest; validate allocation across constituent deals
+32,/baskets/{slug}/confirm,Basket Investment Confirmation,https://qa6.gripinvest.in/baskets/[slug]/confirm,Baskets,P1,Pending,Single payment for multiple instruments
+33,/marketplace,Swap Marketplace — Buy From Other Investors,https://qa6.gripinvest.in/marketplace,Marketplace,P1,Pending,"Launched May 2025; filter by product, yield, remaining tenor"
+34,/marketplace/{listing-id},Marketplace Listing Detail,https://qa6.gripinvest.in/marketplace/[listing-id],Marketplace,P1,Pending,Seller's original deal details + offered price/yield
+35,/portfolio/sell/{inv-id},Sell Investment — List on Marketplace,https://qa6.gripinvest.in/portfolio/sell/[inv-id],Marketplace,P2,Pending,Launched with Sell Anytime (Mar 2025); validate pricing rules
+36,/portfolio/sell/{inv-id}/confirm,Sell Listing Confirmation,https://qa6.gripinvest.in/portfolio/sell/[inv-id]/confirm,Marketplace,P2,Pending,Confirm listing; test cancellation flow
+37,/portfolio,Portfolio Overview — Total AUM + Returns,https://qa6.gripinvest.in/portfolio,Portfolio,P0,Pending,"Shows live investments, matured, XIRR; demat sync"
+38,/portfolio/active,Active Investments List,https://qa6.gripinvest.in/portfolio/active,Portfolio,P0,Pending,Filter by product type; validate real-time value
+39,/portfolio/matured,Matured / Closed Investments,https://qa6.gripinvest.in/portfolio/matured,Portfolio,P1,Pending,Repayment history; validate principal + interest amounts
+40,/portfolio/{inv-id},Individual Investment Detail,https://qa6.gripinvest.in/portfolio/[inv-id],Portfolio,P0,Pending,"ISIN, units, current value, next payout date, documents"
+41,/portfolio/{inv-id}/schedule,Repayment / Cash-Flow Schedule,https://qa6.gripinvest.in/portfolio/[inv-id]/schedule,Portfolio,P1,Pending,Full coupon/EMI schedule with payment status per date
+42,/portfolio/infinite,Grip Infinite — Auto-Invest Dashboard,https://qa6.gripinvest.in/portfolio/infinite,Portfolio,P1,Pending,"AI auto-reinvest module; set target, horizon, risk preference"
+43,/profile,"Profile — Name, Email, Mobile, KYC Status",https://qa6.gripinvest.in/profile,Account / Profile,P1,Pending,Edit details; show SEBI-linked demat and bank
+44,/profile/bank,Bank Account Management,https://qa6.gripinvest.in/profile/bank,Account / Profile,P2,Pending,Add/update bank; re-verify via penny drop
+45,/profile/demat,Demat Account Management,https://qa6.gripinvest.in/profile/demat,Account / Profile,P2,Pending,View DP ID + Client ID; update if needed
+46,/profile/nominee,Nominee Details Management,https://qa6.gripinvest.in/profile/nominee,Account / Profile,P2,Pending,Add or update nominee
+47,/profile/referral,Refer & Earn,https://qa6.gripinvest.in/profile/referral,Account / Profile,P2,Pending,Referral code share; track invites and rewards
+48,/notifications,Notification Centre,https://qa6.gripinvest.in/notifications,Account / Profile,P2,Pending,"All deal alerts, payout notifications, KYC status"
+49,/legal,Terms & Conditions + Privacy Policy,https://qa6.gripinvest.in/legal,Static / Legal,P2,Pending,"SEBI OBPP disclosures, grievance policy mandatory"
+50,/disclosures,SEBI Disclosures / Regulatory Page,https://qa6.gripinvest.in/disclosures,Static / Legal,P2,Pending,INZ000312836 disclosure; OBPP charter
+51,/help,Help & Support / FAQ,https://qa6.gripinvest.in/help,Static / Legal,P2,Pending,Intercom chat widget + FAQ; test ticket raise flow
+,,,,,,,
+SHARED SKELETON ANALYSIS,,,,,,,
+#,Screen,Description,Skeleton Pattern,Shared With (cross-asset),#,Match,Reuse Opportunity
+1,Login / OTP,Mobile number + OTP,*/auth/otp,App (Android + iOS),2,Exact,High — identical UI; test once across web & app
+2,PAN Verification,PAN input + NSDL check,*/kyc/pan,App (Android + iOS),2,Exact,High — identical; test once
+3,Bank Account Verify,IFSC + account + penny drop,*/kyc/bank,App (Android + iOS),2,Exact,High — same flow
+4,Demat Linking,CDSL/NSDL DP+Client ID,*/kyc/demat,App (Android + iOS),2,Exact,High — same form; platform camera differs
+5,KYC Status Screen,In-Review / Approved / Rejected,*/kyc/status,App (Android + iOS),2,Exact,High — same states
+6,Bond Detail,Deal detail card + invest CTA,*/bond/{slug},App (Android + iOS),2,Exact,High — same data; app = native scroll
+7,LoanX Detail,SDI deal detail,*/loanx/{slug},App (Android + iOS),2,Exact,High — test once
+8,Amount Entry,Invest ₹ amount input,*/invest/amount,App (Android + iOS),2,Exact,High — same min/max logic
+9,Payment Screen,UPI / netbanking / NACH,*/invest/payment,App (Android + iOS),2,Partial,Medium — UPI app list differs Android vs iOS
+10,Investment Success,NSE confirmed screen,*/invest/success,App (Android + iOS),2,Exact,High — test once
+11,Portfolio Overview,AUM + XIRR dashboard,*/portfolio,App (Android + iOS),2,Exact,High — same data
+12,Basket Detail,Theme basket with holdings,*/baskets/{slug},App (Android + iOS),2,Exact,High — test once
+13,Marketplace Listing,Peer-to-peer deal listing,*/marketplace,App (Android + iOS),2,Exact,High — test once
+14,Help & Support,Intercom chat + FAQ,*/support,App (Android + iOS),2,Exact,High — same Intercom widget
+15,Refer & Earn,Referral code + tracking,*/referral,App (Android + iOS),2,Exact,High — same except share sheet API
+16,Notification Centre,All alerts and confirmations,*/notifications,App (Android + iOS),2,Partial,Medium — iOS APNs vs Android FCM
+17,Error / Offline Screen,No internet catch-all,*/error/offline,App (Android + iOS),2,Exact,High — test once per platform
+,,,,,,,
+SKELETON SUMMARY,,,,,,,
+Exact-match shared screens,15,,,,,,
+Partial-match screens,2,,,,,,

@@ -1,0 +1,278 @@
+{
+  "name": "Tata Pension Fund",
+  "app_id": "TATAPENSION",
+  "start_url": "https://www.tatapensionfund.com/",
+  "domain": "tatapensionfund.com",
+  "flow_steps": [
+    {
+      "id": "homepage",
+      "description": "Home / Landing",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "about_nps",
+      "description": "About NPS",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/about-nps",
+          "description": "Navigate to About NPS"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "nps_vatsalya",
+      "description": "NPS Vatsalya",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/nps-vatsalya",
+          "description": "Navigate to NPS Vatsalya"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "nps_smart_retirement",
+      "description": "NPS Smart Retirement Fund",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/nps-smart-retirement-fund",
+          "description": "Navigate to NPS Smart Retirement Fund"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "benefits_of_nps",
+      "description": "Benefits of NPS",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/benefits-of-nps",
+          "description": "Navigate to Benefits of NPS"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "how_do_i_start",
+      "description": "How Do I Start",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/how-do-i-start",
+          "description": "Navigate to How Do I Start"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "our_legacy",
+      "description": "Our Legacy",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/our-legacy",
+          "description": "Navigate to Our Legacy"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "public_disclosure_nav",
+      "description": "Public Disclosure & NAV",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/public-disclosure-and-nav",
+          "description": "Navigate to Public Disclosure & NAV"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "nps_calculator",
+      "description": "NPS Calculator",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/nps-calculator",
+          "description": "Navigate to NPS Calculator"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "start_nps",
+      "description": "Start NPS (Redirect to eNPS)",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/start-nps",
+          "description": "Navigate to Start NPS"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "blogs",
+      "description": "Blogs",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/blogs",
+          "description": "Navigate to Blogs"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "videos",
+      "description": "Videos",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/videos",
+          "description": "Navigate to Videos"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "abc_of_nps",
+      "description": "ABC of NPS",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/abc-of-nps",
+          "description": "Navigate to ABC of NPS"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "tax_handbook",
+      "description": "Tax Handbook",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/tax-handbook",
+          "description": "Navigate to Tax Handbook"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "contact_us",
+      "description": "Contact Us",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/contact-us",
+          "description": "Navigate to Contact Us"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "faqs",
+      "description": "FAQs",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/faqs",
+          "description": "Navigate to FAQs"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "privacy_policy",
+      "description": "Privacy Policy",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/privacy-policy",
+          "description": "Navigate to Privacy Policy"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "terms_of_use",
+      "description": "Terms of Use",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/terms-of-use",
+          "description": "Navigate to Terms of Use"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "cookie_policy",
+      "description": "Cookie Policy",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/cookie-policy",
+          "description": "Navigate to Cookie Policy"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "sitemap",
+      "description": "Sitemap",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.tatapensionfund.com/sitemap",
+          "description": "Navigate to Sitemap"
+        }
+      ],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

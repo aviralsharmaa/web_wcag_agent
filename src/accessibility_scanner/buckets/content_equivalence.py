@@ -1,9 +1,19 @@
 from __future__ import annotations
 
+import re
+
 from ..html_utils import DOMSnapshot
 from ..models import CheckpointResult, CheckpointStatus, PageArtifact
 from ..workers.common import accessible_name
 from .base import result
+
+# Image src/class patterns strongly suggesting text rendered as image
+_TEXT_IMAGE_SRC_RE = re.compile(
+    r"(banner|hero|heading|title|promo|offer|cta|tagline|slogan|headline|announcement)",
+    re.IGNORECASE,
+)
+# Large dimension thresholds — images wider than this with text-like alt are suspect
+_MIN_TEXT_IMAGE_WIDTH = 200
 
 
 def analyze_content_equivalence(page: PageArtifact) -> list[CheckpointResult]:
@@ -154,18 +164,68 @@ def analyze_content_equivalence(page: PageArtifact) -> list[CheckpointResult]:
         findings.append(result("1.2.4", CheckpointStatus.FAIL, page, "Live media appears present without caption track evidence."))
 
     text_image_candidates = page.render_metrics.get("ocr_text_image_candidates", [])
+    static_text_images = _detect_text_in_images(snapshot, images)
+    all_text_image_issues = list(text_image_candidates) + static_text_images
     if not images:
         findings.append(result("1.4.5", CheckpointStatus.NOT_APPLICABLE, page, "No image content detected."))
-    elif text_image_candidates:
+    elif all_text_image_issues:
         findings.append(
             result(
                 "1.4.5",
-                CheckpointStatus.CANNOT_VERIFY,
+                CheckpointStatus.FAIL,
                 page,
-                f"Found {len(text_image_candidates)} likely text-in-image assets; manual validation required.",
+                f"Found {len(all_text_image_issues)} likely text-in-image occurrences: "
+                f"{'; '.join(str(i) for i in all_text_image_issues[:5])}.",
             )
         )
     else:
         findings.append(result("1.4.5", CheckpointStatus.PASS, page, "No text-in-image heuristics detected."))
 
     return findings
+
+
+def _detect_text_in_images(snapshot: DOMSnapshot, images: list) -> list[str]:
+    """Static heuristics to detect images that likely contain rendered text.
+
+    Balanced: catch obvious text-as-image patterns without flagging every
+    icon or decorative image.
+    """
+    issues: list[str] = []
+
+    for img in images:
+        src = img.attrs.get("src", "").lower()
+        alt = img.attrs.get("alt", "").strip()
+        classes = img.attrs.get("class", "").lower()
+
+        # Skip small icons, logos, decorative images, and inline SVGs
+        if "icon" in src or "icon" in classes or "logo" in src or "logo" in classes:
+            continue
+        if ".svg" in src:
+            continue
+        if img.attrs.get("role", "").lower() == "presentation":
+            continue
+        if not alt:
+            continue  # No alt = handled by 1.1.1, not 1.4.5
+
+        # (a) Image inside a heading — likely text rendered as image
+        #     Only flag if alt is multi-word (not just a logo name)
+        if snapshot.has_ancestor_tag(img, {"h1", "h2", "h3"}) and len(alt.split()) >= 3:
+            issues.append(f"Image inside heading with text alt: '{alt[:50]}'")
+            continue
+
+        # (b) Image src contains banner/hero/promo keywords with text alt
+        if _TEXT_IMAGE_SRC_RE.search(src) and len(alt.split()) >= 3:
+            issues.append(f"Banner/hero image with text alt (src='{src[:40]}', alt='{alt[:30]}')")
+            continue
+
+        # (c) Large image (explicit width) with sentence-like alt text
+        width_str = img.attrs.get("width", "")
+        try:
+            width = int(re.sub(r"[^\d]", "", width_str)) if width_str else 0
+        except ValueError:
+            width = 0
+        if width >= 300 and len(alt.split()) >= 5:
+            issues.append(f"Large image (width={width}) with text alt: '{alt[:40]}'")
+            continue
+
+    return issues

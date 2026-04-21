@@ -1,0 +1,111 @@
+{
+  "name": "Trust MF UAT",
+  "app_id": "TRUSTMFUAT",
+  "start_url": "https://clientwebsitesuat3.kfintech.com/TrustMFUAT",
+  "domain": "clientwebsitesuat3.kfintech.com",
+  "flow_steps": [
+    {
+      "id": "landing_scan",
+      "description": "Scan the landing page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_login",
+      "description": "User logs in with PAN and OTP",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Sign in with OTP. PAN: BVJPT7390B, OTP: 789321. Complete captcha if needed.",
+          "instructions": "Click Sign In / Login, enter PAN BVJPT7390B, request OTP, enter 789321. Scanner auto-continues when URL changes.",
+          "completion_url_contains": "/Investor",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated routes — Dashboard, Portfolio, Transactions, Statements, NAV, Fund Performance, Account details, and any other sections."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 300,
+    "max_screens": 80,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 25,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a mutual fund investor using the Trust MF portal. Explore dashboard, portfolio, transactions, statements, NAV, fund performance, account settings, and any other available sections.",
+      "major_sections": [
+        "dashboard",
+        "portfolio",
+        "transactions",
+        "statements",
+        "NAV",
+        "fund performance",
+        "account",
+        "settings"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "portfolio",
+        "transaction",
+        "statement",
+        "NAV",
+        "fund",
+        "performance",
+        "account",
+        "folio",
+        "scheme",
+        "history",
+        "report",
+        "SIP",
+        "redemption",
+        "switch",
+        "purchase"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal"
+      ],
+      "journey_rules": [
+        "Click each main navigation item one by one.",
+        "Explore all sub-menus, tabs, and expandable sections.",
+        "If you see dropdown menus, hover/click to reveal sub-items.",
+        "Do NOT click logout or sign out.",
+        "Do NOT submit any actual transactions — only explore the forms."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

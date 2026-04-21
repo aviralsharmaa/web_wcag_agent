@@ -1,0 +1,79 @@
+{
+  "name": "BondScanner",
+  "app_id": "BONDSCANNER",
+  "start_url": "https://bondscanner.com/",
+  "domain": "bondscanner.com",
+  "flow_steps": [
+    {
+      "id": "homepage",
+      "description": "Scan the homepage / landing page",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_pre_login",
+      "description": "Explore all public pre-login pages",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all public pages — About, Careers, Contact, Blog, Calculators, Learn pages, Investor Awareness, and any other pre-login pages. Do NOT click Login yet."
+        }
+      ]
+    },
+    {
+      "id": "manual_login",
+      "description": "User completes login manually",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "User logs in manually on bondscanner.com",
+          "instructions": "Complete the login manually: Click Login → Login with email → Enter operations@bondscanner.com → Send OTP → Enter OTP 1001. Scanner will resume after URL changes.",
+          "completion_url_changed": true,
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan post-login dashboard",
+      "scan_scope": "post_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_post_login",
+      "description": "Explore all reachable post-login pages and routes",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all post-login pages — dashboard, bonds, portfolio, watchlist, orders, transactions, reports, settings, profile, and any other sections. Scroll down each page, click tabs, filters, cards, and interactive elements."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": false,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

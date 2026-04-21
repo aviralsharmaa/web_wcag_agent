@@ -69,6 +69,10 @@
     "strict_flow_actions": true,
     "cannot_verify_policy": "pass_leaning",
     "cannot_verify_threshold": 31,
-    "cannot_verify_enforcement": "both"
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
   }
 }

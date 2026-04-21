@@ -1,0 +1,95 @@
+{
+  "name": "KINSITE Web - Post Login",
+  "app_id": "KSLKINSITEPOSTLOGIN",
+  "start_url": "https://kie.kotak.com/kinsite",
+  "domain": "kotak.com",
+  "flow_steps": [
+    {
+      "id": "homepage",
+      "description": "Scan the Kinsite homepage before login",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "login",
+      "description": "Login with credentials",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Find and click the Login or Sign In button on the page"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='email'], input[name='email'], input[placeholder*='email'], input[placeholder*='Email'], input[name='username'], input[id*='email'], input[id*='user']",
+          "value": "ayush@onfinance.in"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[name='password'], input[placeholder*='password'], input[placeholder*='Password']",
+          "value": "Ayush@123"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], input[type='submit'], button:has-text('Login'), button:has-text('Sign In'), button:has-text('Log In'), button:has-text('Submit')"
+        }
+      ],
+      "wait_after": 8000
+    },
+    {
+      "id": "manual_login",
+      "description": "Manual login fallback if automated login fails",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete login if automated login did not work",
+          "instructions": "Login with: ayush@onfinance.in / Ayush@123. Scanner will resume after URL changes.",
+          "completion_url_changed": true,
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan post-login dashboard",
+      "scan_scope": "post_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_post_login",
+      "description": "Explore all reachable post-login pages and routes",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all post-login pages — dashboard, portfolio, research, reports, companies, sectors, events, teams, watchlist, settings, profile, and any other sections. Scroll down each page, click tabs, filters, cards, and interactive elements."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 300,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 20,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

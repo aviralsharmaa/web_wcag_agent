@@ -1,0 +1,45 @@
+{
+  "name": "HDFC TRU",
+  "app_id": "HDFCTRU",
+  "start_url": "https://hdfc-tru.com/",
+  "domain": "hdfc-tru.com",
+  "flow_steps": [
+    {
+      "id": "homepage",
+      "description": "Home / Landing page",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 2000
+    },
+    {
+      "id": "explore_public",
+      "description": "Explore all reachable public pages, links, menus, and routes",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all navigation links, menus, footer links, sub-pages, and reachable public pages across the entire site"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

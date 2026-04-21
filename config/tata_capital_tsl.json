@@ -1,0 +1,96 @@
+{
+  "name": "Tata Capital TSL",
+  "app_id": "TATACAPTSL",
+  "start_url": "https://www.tatacapital.com/tsl.html",
+  "domain": "www.tatacapital.com",
+  "flow_steps": [
+    {
+      "id": "landing_scan",
+      "description": "Scan the TSL landing page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all public pre-login pages",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all public pages of the Tata Capital TSL website — Home, About, Products, Services, Investor Relations, Media, Contact, Careers, and any other sections reachable from the navigation."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a customer browsing the Tata Capital TSL website. Explore all informational pages, product details, investor resources, media, careers, and any other available sections.",
+      "major_sections": [
+        "home",
+        "about",
+        "products",
+        "services",
+        "investor relations",
+        "media",
+        "contact",
+        "careers",
+        "governance",
+        "policies"
+      ],
+      "preferred_tokens": [
+        "home",
+        "about",
+        "product",
+        "service",
+        "investor",
+        "media",
+        "contact",
+        "career",
+        "loan",
+        "finance",
+        "governance",
+        "policy",
+        "report",
+        "disclosure",
+        "CSR",
+        "board",
+        "committee"
+      ],
+      "avoid_tokens": [
+        "login",
+        "sign in",
+        "register",
+        "sign up",
+        "logout",
+        "play store",
+        "app store",
+        "apply now"
+      ],
+      "journey_rules": [
+        "Click each main navigation item one by one.",
+        "Explore all sub-menus, tabs, dropdowns, and expandable sections.",
+        "Stay within www.tatacapital.com — do not navigate to external domains.",
+        "Do NOT click login or sign in links.",
+        "Explore footer links as well.",
+        "If there are product/service pages, click into each one to see details."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

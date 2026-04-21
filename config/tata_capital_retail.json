@@ -1,0 +1,151 @@
+{
+  "name": "Tata Capital Retail Online",
+  "app_id": "TATACAPRETAIL",
+  "start_url": "https://retailonline.tatacapital.com/#/login",
+  "domain": "retailonline.tatacapital.com",
+  "flow_steps": [
+    {
+      "id": "login_page",
+      "description": "Scan the login page (pre-login)",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "click_userid_login",
+      "description": "Click login with User ID option",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "a:has-text('User ID'), button:has-text('User ID'), span:has-text('User ID'), a:has-text('user id'), button:has-text('user id'), div:has-text('User ID')",
+          "description": "Click login with User ID option"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "userid_login_form",
+      "description": "Scan User ID login form",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_and_submit",
+      "description": "Fill User ID, password and login",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='User' i], input[placeholder*='user' i], input[name*='user' i], input[id*='user' i], input[type='text']",
+          "value": "7469541",
+          "description": "Fill User ID"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[placeholder*='Password' i], input[placeholder*='password' i]",
+          "value": "Tata@123",
+          "description": "Fill password"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], button:has-text('Login'), button:has-text('Sign In'), button:has-text('SIGN IN'), button:has-text('Submit'), button:has-text('LOG IN')",
+          "description": "Click login"
+        }
+      ],
+      "wait_after": 8000
+    },
+    {
+      "id": "post_login_manual",
+      "description": "Handle any OTP or additional auth step",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete any additional auth (OTP, captcha, security question) if needed",
+          "instructions": "If there's an OTP or additional auth step, complete it. If you're already on the dashboard, just wait — the scanner will auto-detect and continue.",
+          "completion_mode": "all",
+          "completion_url_not_contains": ["/login"],
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated routes including dashboard, loans, payments, statements, profile, settings, and any other sections"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a retail customer using the Tata Capital online portal. Explore dashboard, loan details, EMI payments, statements, profile, settings, and any other available sections.",
+      "major_sections": [
+        "dashboard",
+        "loans",
+        "payments",
+        "EMI",
+        "statements",
+        "profile",
+        "settings",
+        "offers"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "loan",
+        "EMI",
+        "payment",
+        "statement",
+        "profile",
+        "settings",
+        "account",
+        "offers",
+        "history",
+        "schedule",
+        "details"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal"
+      ],
+      "journey_rules": [
+        "This is likely an SPA — ONLY use action 'click' on visible elements. NEVER type URLs directly.",
+        "After reaching the dashboard, click each main nav item one by one.",
+        "Explore loan details, payment history, and statement sections.",
+        "If you see tabs or sub-sections, click each one."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

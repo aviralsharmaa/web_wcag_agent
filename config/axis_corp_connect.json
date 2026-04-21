@@ -1,0 +1,165 @@
+{
+  "name": "Axis Corp Connect UAT",
+  "app_id": "AXISCORPCONNECT",
+  "start_url": "https://clientwebsitesuat2.kfintech.com/AxisCorpConnect",
+  "domain": "clientwebsitesuat2.kfintech.com",
+  "flow_steps": [
+    {
+      "id": "login_page",
+      "description": "Scan the login page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_credentials",
+      "description": "Fill user ID and password",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='email'], input[type='text'][placeholder*='mail' i], input[type='text'][placeholder*='user' i], input[name*='user' i], input[name*='email' i], input[id*='user' i], input[id*='email' i], input[type='text']",
+          "value": "sachinbandgar05@gmail.com",
+          "description": "Fill user ID / email"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[placeholder*='password' i], input[name*='pass' i]",
+          "value": "Axis@123",
+          "description": "Fill password"
+        }
+      ],
+      "wait_after": 2000
+    },
+    {
+      "id": "captcha_and_submit",
+      "description": "User fills captcha and clicks login",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Fill the captcha if present, then click Login/Submit. If no captcha, just click Login.",
+          "instructions": "Fill the captcha field and click the Login/Sign In button. The scanner will auto-detect when you move past the login page.",
+          "completion_mode": "all",
+          "completion_url_not_contains": ["/login", "/Login", "/signin"],
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "otp_step",
+      "description": "Fill OTP",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='text'][placeholder*='OTP' i], input[type='number'][placeholder*='OTP' i], input[name*='otp' i], input[id*='otp' i], input[type='tel'], input[maxlength='6'], input[type='text'][maxlength='6']",
+          "value": "123456",
+          "description": "Fill OTP"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], button:has-text('Submit'), button:has-text('Verify'), button:has-text('SUBMIT'), button:has-text('VERIFY'), button:has-text('Continue'), button:has-text('Proceed')",
+          "description": "Submit OTP"
+        }
+      ],
+      "wait_after": 8000
+    },
+    {
+      "id": "post_login_manual",
+      "description": "Handle any additional auth step",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete any additional auth if needed. If already on dashboard, scanner will auto-continue.",
+          "instructions": "If there's an additional step, complete it. Otherwise wait — the scanner will detect the dashboard and continue.",
+          "completion_mode": "all",
+          "completion_url_not_contains": ["/login", "/Login", "/otp", "/OTP"],
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated routes including dashboard, reports, transactions, profile, settings, and any other sections"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a corporate user accessing the Axis Corp Connect portal. Explore dashboard, reports, transactions, fund operations, account details, settings, and any other available sections.",
+      "major_sections": [
+        "dashboard",
+        "reports",
+        "transactions",
+        "funds",
+        "account",
+        "profile",
+        "settings"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "report",
+        "transaction",
+        "fund",
+        "account",
+        "profile",
+        "settings",
+        "statement",
+        "history",
+        "portfolio",
+        "NAV",
+        "SIP",
+        "redemption",
+        "purchase"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal"
+      ],
+      "journey_rules": [
+        "After reaching the dashboard, click each main nav item one by one.",
+        "Explore all sub-menus and tabs within each section.",
+        "If you see tabs or sub-sections, click each one.",
+        "Do NOT click logout or sign out."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

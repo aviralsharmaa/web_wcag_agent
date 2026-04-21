@@ -34,6 +34,131 @@ USER_AGENT = (
 )
 
 # Expanded LLM system prompt for deeper exploration
+# Floating control panel for explore mode — Pause / Scan This Page / Continue
+INJECT_EXPLORE_PANEL_JS = """
+(() => {
+    const old = document.getElementById('__a11y_explore_panel');
+    if (old) old.remove();
+
+    const host = document.createElement('div');
+    host.id = '__a11y_explore_panel';
+    host.style.cssText = 'position:fixed;top:10px;right:10px;z-index:2147483647;pointer-events:auto;';
+    const shadow = host.attachShadow({mode: 'closed'});
+
+    shadow.innerHTML = `
+        <style>
+            #panel {
+                background: rgba(15,15,25,0.95); border: 2px solid #3B82F6;
+                border-radius: 12px; padding: 12px 16px; font-family: Arial, sans-serif;
+                box-shadow: 0 6px 24px rgba(0,0,0,0.5); min-width: 220px;
+            }
+            #title {
+                color: #93C5FD; font-size: 11px; font-weight: bold;
+                text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+                display: flex; align-items: center; gap: 6px;
+            }
+            #dot { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; }
+            #dot.paused { background: #F59E0B; }
+            .btn {
+                display: block; width: 100%; padding: 8px 0; margin: 4px 0;
+                border: none; border-radius: 6px; font-size: 13px; font-weight: bold;
+                cursor: pointer; font-family: Arial, sans-serif; transition: all 0.15s;
+            }
+            .btn:hover { transform: scale(1.02); filter: brightness(1.15); }
+            .btn:disabled { opacity: 0.4; cursor: default; transform: none; filter: none; }
+            #pauseBtn { background: #F59E0B; color: #000; }
+            #pauseBtn.resume { background: #22C55E; color: #fff; }
+            #scanBtn { background: #3B82F6; color: #fff; }
+            #continueBtn { background: #10B981; color: #fff; }
+            #status {
+                margin-top: 6px; padding: 4px 8px; font-size: 10px;
+                background: rgba(0,0,0,0.6); color: #86EFAC; border-radius: 4px;
+                font-family: monospace; display: none;
+            }
+            #screens {
+                color: #9CA3AF; font-size: 10px; margin-top: 4px; text-align: center;
+            }
+        </style>
+        <div id="panel">
+            <div id="title"><div id="dot"></div> Auto Scan</div>
+            <button class="btn" id="pauseBtn">⏸ Pause</button>
+            <button class="btn" id="scanBtn" disabled>♿ Scan This Page</button>
+            <button class="btn" id="continueBtn" disabled>▶ Continue Scanning</button>
+            <div id="status"></div>
+            <div id="screens"></div>
+        </div>
+    `;
+
+    const dot = shadow.getElementById('dot');
+    const pauseBtn = shadow.getElementById('pauseBtn');
+    const scanBtn = shadow.getElementById('scanBtn');
+    const continueBtn = shadow.getElementById('continueBtn');
+    const status = shadow.getElementById('status');
+    const screens = shadow.getElementById('screens');
+
+    window.__a11y_explore_paused = false;
+    window.__a11y_explore_scan_request = false;
+    window.__a11y_explore_continue = false;
+
+    pauseBtn.addEventListener('click', () => {
+        if (window.__a11y_explore_paused) {
+            // Resume = same as continue
+            window.__a11y_explore_paused = false;
+            window.__a11y_explore_continue = true;
+            pauseBtn.textContent = '⏸ Pause';
+            pauseBtn.classList.remove('resume');
+            scanBtn.disabled = true;
+            continueBtn.disabled = true;
+            dot.classList.remove('paused');
+        } else {
+            window.__a11y_explore_paused = true;
+            pauseBtn.textContent = '▶ Resume';
+            pauseBtn.classList.add('resume');
+            scanBtn.disabled = false;
+            continueBtn.disabled = false;
+            dot.classList.add('paused');
+        }
+    });
+
+    scanBtn.addEventListener('click', () => {
+        window.__a11y_explore_scan_request = true;
+        scanBtn.disabled = true;
+        scanBtn.textContent = '⏳ Scanning...';
+    });
+
+    continueBtn.addEventListener('click', () => {
+        window.__a11y_explore_paused = false;
+        window.__a11y_explore_continue = true;
+        pauseBtn.textContent = '⏸ Pause';
+        pauseBtn.classList.remove('resume');
+        scanBtn.disabled = true;
+        continueBtn.disabled = true;
+        dot.classList.remove('paused');
+    });
+
+    document.documentElement.appendChild(host);
+
+    window.__a11y_panel_set_status = (msg) => {
+        status.style.display = 'block';
+        status.textContent = msg;
+    };
+    window.__a11y_panel_set_screens = (n) => {
+        screens.textContent = n + ' screens captured';
+    };
+    window.__a11y_panel_scan_done = () => {
+        scanBtn.textContent = '♿ Scan This Page';
+        if (window.__a11y_explore_paused) scanBtn.disabled = false;
+    };
+
+    const observer = new MutationObserver(() => {
+        if (!document.getElementById('__a11y_explore_panel')) {
+            document.documentElement.appendChild(host);
+        }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+})();
+"""
+
 EXPLORE_SYSTEM_ADDENDUM = """
 IMPORTANT exploration strategy:
 - You MUST explore at least 30 distinct screens/routes. Be thorough.
@@ -60,11 +185,14 @@ class AgenticFlowRunner:
         artifacts_root: str = "artifacts",
         headless: bool = False,
         scan_mode: str = "full_scan",
+        uploader: Any | None = None,
+        cdp_endpoint: str | None = None,
     ) -> None:
         self.config = json.loads(Path(config_path).read_text())
         self.artifacts_root = Path(artifacts_root)
         self.headless = headless
         self.scan_mode = (scan_mode or "full_scan").strip().lower()
+        self.cdp_endpoint = cdp_endpoint
         self.router = LLMRouter()
         analysis_cfg = self.config.get("analysis", {})
         self.analyzer = ScreenAnalyzer(
@@ -95,6 +223,8 @@ class AgenticFlowRunner:
         self.checklist_spec_map = load_checklist_spec_map()
         self._otp_fill_cursor = 0
         self._pin_fill_cursor = 0
+        self.current_phase = "pre_login"  # updated as flow steps execute; used to tag each screen
+        self.uploader = uploader  # optional screenshot uploader (catbox, imgbb, onedrive)
 
     def _artifact_asset_id(self) -> str:
         explicit = str(self.config.get("app_id") or "").strip()
@@ -128,46 +258,180 @@ class AgenticFlowRunner:
 
     def _launch_browser(self):
         from playwright.sync_api import sync_playwright
+        import tempfile
 
         self._pw = sync_playwright().start()
-        self._browser = self._pw.chromium.launch(
+
+        if self.cdp_endpoint:
+            # Connect to a remote Chrome browser via CDP (e.g. k8s browser-service)
+            # Fetch WS URL and rewrite internal hostname to localhost for port-forwarded access
+            import urllib.request
+            cdp_http = self.cdp_endpoint.replace("ws://", "http://").replace("wss://", "https://")
+            try:
+                resp = urllib.request.urlopen(f"{cdp_http}/json/version", timeout=10)
+                version_data = json.loads(resp.read())
+                ws_url = version_data.get("webSocketDebuggerUrl", "")
+                # Replace any internal k8s hostname with the local CDP host
+                from urllib.parse import urlparse
+                cdp_parsed = urlparse(cdp_http)
+                ws_parsed = urlparse(ws_url)
+                ws_url = ws_url.replace(f"{ws_parsed.hostname}:{ws_parsed.port}", f"{cdp_parsed.hostname}:{cdp_parsed.port}")
+                print(f"  CDP WebSocket: {ws_url}")
+                self._browser = self._pw.chromium.connect_over_cdp(ws_url)
+            except Exception as e:
+                print(f"  CDP WS fetch failed ({e}), trying direct connect...")
+                self._browser = self._pw.chromium.connect_over_cdp(self.cdp_endpoint)
+            # Use the default browser context so pages are visible in noVNC/GUI
+            if self._browser.contexts:
+                self._context = self._browser.contexts[0]
+            else:
+                self._context = self._browser.new_context(
+                    viewport={"width": 1440, "height": 900},
+                    locale="en-US",
+                    timezone_id="Asia/Kolkata",
+                    ignore_https_errors=True,
+                )
+            self._context.add_init_script("""
+                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+                Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+                window.chrome = { runtime: {} };
+            """)
+            self._page = self._context.pages[0] if self._context.pages else self._context.new_page()
+            return
+
+        # Use persistent context to avoid bot detection on sites with encryption checks
+        user_data_dir = tempfile.mkdtemp(prefix="pw_profile_")
+        self._context = self._pw.chromium.launch_persistent_context(
+            user_data_dir,
             headless=self.headless,
             slow_mo=150,
-        )
-        self._context = self._browser.new_context(
-            user_agent=USER_AGENT,
+            channel="chrome",
+            args=[
+                "--disable-blink-features=AutomationControlled",
+                "--no-first-run",
+                "--no-default-browser-check",
+            ],
             viewport={"width": 1440, "height": 900},
             locale="en-US",
             timezone_id="Asia/Kolkata",
             ignore_https_errors=True,
-            extra_http_headers={
-                "Accept-Language": "en-US,en;q=0.9",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                "Sec-CH-UA": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-                "Sec-CH-UA-Mobile": "?0",
-                "Sec-CH-UA-Platform": '"macOS"',
-            },
         )
+        self._browser = self._context  # persistent context acts as both
         self._context.add_init_script("""
             Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
             Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
             Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
             window.chrome = { runtime: {} };
         """)
-        self._page = self._context.new_page()
+        self._page = self._context.pages[0] if self._context.pages else self._context.new_page()
 
     def _safe_goto(self, url: str):
         try:
-            self._page.goto(url, wait_until="domcontentloaded", timeout=30000)
-            self._page.wait_for_load_state("load", timeout=10000)
+            self._page.goto(url, wait_until="load", timeout=60000)
+            try:
+                self._page.wait_for_load_state("networkidle", timeout=20000)
+            except Exception:
+                pass
+            # Wait for page body to have actual rendered content
+            self._wait_for_page_ready()
         except Exception:
             pass
 
+    def _wait_for_page_ready(self):
+        """Wait until the page has actually rendered visible content."""
+        # 1. Wait for all <img> tags to finish loading
+        try:
+            self._page.wait_for_function(
+                "() => Array.from(document.images).every(img => img.complete)",
+                timeout=15000,
+            )
+        except Exception:
+            pass
+        # 2. Wait for body to have meaningful height (content rendered)
+        try:
+            self._page.wait_for_function(
+                "() => document.body && document.body.scrollHeight > 500",
+                timeout=10000,
+            )
+        except Exception:
+            pass
+        # 3. Wait for fonts and stylesheets to be fully loaded
+        try:
+            self._page.wait_for_function(
+                "() => document.fonts ? document.fonts.ready.then(() => true) : true",
+                timeout=8000,
+            )
+        except Exception:
+            pass
+        # 4. Scroll down and back up to trigger lazy-loaded content
+        try:
+            scroll_h = self._page.evaluate("() => document.documentElement.scrollHeight")
+            # Scroll through the page in chunks to trigger lazy loading
+            step = 800
+            pos = 0
+            while pos < scroll_h:
+                pos += step
+                self._page.evaluate(f"() => window.scrollTo(0, {pos})")
+                self._page.wait_for_timeout(400)
+            # Scroll back to top
+            self._page.evaluate("() => window.scrollTo(0, 0)")
+            self._page.wait_for_timeout(1000)
+            # Wait for any newly triggered images to load
+            self._page.wait_for_function(
+                "() => Array.from(document.images).every(img => img.complete)",
+                timeout=10000,
+            )
+        except Exception:
+            pass
+        # 5. Final settle for animations/transitions/lazy renders
+        self._page.wait_for_timeout(3000)
+
+    def _upload_artifacts_to_s3(self, run_id: str) -> None:
+        """Upload the run artifacts directory to S3 bucket."""
+        import subprocess
+
+        s3_bucket = "accessibility-web-artifacts"
+        src = str(self.run_dir)
+        dest = f"s3://{s3_bucket}/{run_id}/"
+
+        print(f"\n  Uploading artifacts to S3: {dest}")
+        try:
+            result = subprocess.run(
+                ["aws", "s3", "sync", src, dest, "--quiet"],
+                capture_output=True,
+                text=True,
+                timeout=600,
+            )
+            if result.returncode == 0:
+                print(f"  S3 upload complete: {dest}")
+            else:
+                print(f"  S3 upload failed (exit {result.returncode}): {result.stderr[:200]}")
+        except FileNotFoundError:
+            print("  S3 upload skipped: aws CLI not found")
+        except subprocess.TimeoutExpired:
+            print("  S3 upload timed out (10 min limit)")
+        except Exception as e:
+            print(f"  S3 upload error: {e}")
+
     def _close_browser(self):
-        if self._context:
-            self._context.close()
-        if self._browser:
-            self._browser.close()
+        try:
+            if self._page and not self._page.is_closed():
+                self._page.close()
+        except Exception:
+            pass
+        if self.cdp_endpoint:
+            # For CDP: just close our page and disconnect — don't close the shared context
+            try:
+                if self._browser:
+                    self._browser.close()  # disconnects CDP session
+            except Exception:
+                pass
+        else:
+            if self._context:
+                self._context.close()
+            if self._browser:
+                self._browser.close()
         if self._pw:
             self._pw.stop()
 
@@ -360,7 +624,7 @@ class AgenticFlowRunner:
 
     def _get_page_info(self) -> dict[str, Any]:
         page = self._page
-        return page.evaluate("""() => {
+        _JS = """() => {
             const info = {};
             info.url = location.href;
             info.title = document.title;
@@ -381,7 +645,7 @@ class AgenticFlowRunner:
                     href: el.href || '',
                     type: el.type || '',
                     id: el.id || '',
-                    class_name: (el.className || '').substring(0, 60),
+                    class_name: (typeof el.className === 'string' ? el.className : (el.className?.baseVal || '')).substring(0, 60),
                     visible: rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight + 100,
                     disabled: el.disabled || false,
                     placeholder: el.placeholder || '',
@@ -403,13 +667,50 @@ class AgenticFlowRunner:
             info.viewport_height = window.innerHeight;
             info.can_scroll = document.documentElement.scrollHeight > window.innerHeight + 200;
             return info;
-        }""")
+        }"""
+        for attempt in range(3):
+            try:
+                return page.evaluate(_JS)
+            except Exception as exc:
+                if attempt < 2 and "execution context was destroyed" in str(exc).lower():
+                    page.wait_for_timeout(1500)
+                    try:
+                        page.wait_for_load_state("domcontentloaded", timeout=10000)
+                    except Exception:
+                        pass
+                else:
+                    raise
+        return page.evaluate(_JS)
+
+    def _hide_injected_panels(self):
+        """Hide injected UI panels before screenshots."""
+        try:
+            self._page.evaluate("""() => {
+                const ids = ['__a11y_explore_panel', '__a11y_scan_container'];
+                ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+            }""")
+        except Exception:
+            pass
+
+    def _show_injected_panels(self):
+        """Show injected UI panels after screenshots."""
+        try:
+            self._page.evaluate("""() => {
+                const ids = ['__a11y_explore_panel', '__a11y_scan_container'];
+                ids.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ''; });
+            }""")
+        except Exception:
+            pass
 
     def _capture_screenshot(self, label: str) -> str:
         safe = label.replace(" ", "_").replace("/", "_").replace(":", "_")[:50]
         idx = len(self.screen_results) + 1
         path = self.run_dir / f"{idx:02d}-{safe}.png"
+        # Ensure page content is fully rendered before capturing
+        self._wait_for_page_ready()
+        self._hide_injected_panels()
         self._page.screenshot(path=str(path), full_page=True)
+        self._show_injected_panels()
         return str(path)
 
     def _scroll_and_screenshot(self, label: str) -> list[dict[str, Any]]:
@@ -428,9 +729,10 @@ class AgenticFlowRunner:
 
         position = vh  # already captured first fold
         fold = 2
+        self._hide_injected_panels()
         while position < scroll_height and fold <= 6:
             page.evaluate(f"() => window.scrollTo(0, {position})")
-            page.wait_for_timeout(500)
+            page.wait_for_timeout(1500)
             safe = f"{label}-fold{fold}".replace(" ", "_").replace("/", "_")[:50]
             idx = len(self.screen_results) + 1
             path = self.run_dir / f"{idx:02d}-{safe}.png"
@@ -438,11 +740,41 @@ class AgenticFlowRunner:
             screenshots.append({"path": str(path), "scroll_y": int(position)})
             position += vh
             fold += 1
+        self._show_injected_panels()
 
         # Scroll back to top
         page.evaluate("() => window.scrollTo(0, 0)")
         page.wait_for_timeout(300)
         return screenshots
+
+    @staticmethod
+    def _detect_focus_trap(focus_trail: list, interactive_count: int) -> bool:
+        """Detect actual keyboard trap — focus stuck cycling on same element(s).
+
+        Low coverage alone (e.g. 1/100 elements reached) usually means the Tab
+        probe ran out of time, not that there's a trap.  Only flag as trap when
+        we see the same element selector repeated (focus cycling) or when focus
+        doesn't move at all despite multiple tab presses.
+        """
+        if not focus_trail or interactive_count <= 0:
+            return False
+
+        # Check for repeated/cycling selectors (stuck in a trap)
+        selectors = [e.get("selector", "") or e.get("tag", "") for e in focus_trail]
+        if len(selectors) >= 3:
+            # If the last 3+ entries are all the same selector, it's a trap
+            unique_last = set(selectors[-3:])
+            if len(unique_last) == 1:
+                return True
+
+            # If we see a repeating cycle (A→B→A→B)
+            if len(selectors) >= 4:
+                pairs = list(zip(selectors, selectors[2:]))
+                cycling = sum(1 for a, b in pairs if a == b)
+                if cycling >= len(pairs) * 0.7:
+                    return True
+
+        return False
 
     def _build_page_artifact(self, depth: int = 0, screenshot_path: str | None = None) -> PageArtifact:
         page = self._page
@@ -481,10 +813,7 @@ class AgenticFlowRunner:
             "focus_trail": focus_trail,
             "focus_trail_length": len(focus_trail),
             "keyboard_access_ok": len(focus_trail) > 0,
-            "keyboard_trap_detected": (
-                len(focus_trail) < max(1, interactive_count * 0.2)
-                and interactive_count > 5
-            ),
+            "keyboard_trap_detected": self._detect_focus_trap(focus_trail, interactive_count),
             "focus_visible_violations": focus_visible_violations,
             "focus_visible_ok": len(focus_visible_violations) == 0,
             "aria_live_region_count": len(aria_live),
@@ -693,39 +1022,60 @@ class AgenticFlowRunner:
     def _create_annotated_screenshot(
         self,
         screenshot_path: str,
-        representative_failure: dict[str, Any] | None,
+        failures: list[dict[str, Any]],
     ) -> tuple[str | None, dict[str, Any] | None]:
-        """Render exactly one annotation for a selected representative failure."""
+        """Render one numbered annotation per unique failing checkpoint on a screenshot.
+
+        Deduplicates by checkpoint, sorts by severity, caps at 10 annotations,
+        and only includes candidates where a concrete element was found (exact match
+        or a meaningful fallback — viewport-only fallbacks are skipped).
+        """
         try:
-            if not representative_failure:
+            if not failures:
                 return None, None
 
-            checkpoint = representative_failure.get("checkpoint") or representative_failure.get("checkpoint_id")
-            rationale = representative_failure.get("rationale", "Accessibility issue detected.")
-            candidate = select_annotation_target(
-                self._page,
-                checkpoint or "",
-                rationale,
-            )
-            if not candidate:
+            # Deduplicate by checkpoint, keeping highest-priority first
+            seen: set[str] = set()
+            unique_failures: list[dict[str, Any]] = []
+            for f in failures:
+                cp = f.get("checkpoint") or f.get("checkpoint_id") or ""
+                if cp and cp not in seen:
+                    seen.add(cp)
+                    unique_failures.append(f)
+
+            annotation_payloads: list[dict[str, Any]] = []
+            for failure in unique_failures[:10]:  # cap at 10 to keep image readable
+                checkpoint = failure.get("checkpoint") or failure.get("checkpoint_id") or ""
+                rationale = failure.get("rationale", "Accessibility issue detected.")
+                candidate = select_annotation_target(self._page, checkpoint, rationale)
+                if not candidate:
+                    continue
+                # Skip generic full-viewport fallbacks — they add noise with no useful target
+                if candidate.get("fallback_tier") == "viewport":
+                    continue
+                annotation_payloads.append({
+                    **candidate,
+                    "checkpoint_id": checkpoint or candidate.get("checkpoint_id") or "?",
+                    "rationale": rationale or candidate.get("rationale"),
+                })
+
+            if not annotation_payloads:
                 return None, None
 
-            annotation_payload = {
-                **candidate,
-                "checkpoint_id": checkpoint or candidate.get("checkpoint_id") or "?",
-                "rationale": rationale or candidate.get("rationale"),
-            }
             out_path = screenshot_path.replace(".png", "-annotated.png")
-            output = annotate_screenshot(screenshot_path, [annotation_payload], out_path)
+            output = annotate_screenshot(screenshot_path, annotation_payloads, out_path)
+
+            primary = annotation_payloads[0]
             metadata = {
-                "strategy": "one-screenshot-one-annotation",
-                "checkpoint": annotation_payload.get("checkpoint_id"),
-                "rationale": rationale,
+                "strategy": "multi-annotation",
+                "annotations_count": len(annotation_payloads),
+                "checkpoint": primary.get("checkpoint_id"),
+                "rationale": primary.get("rationale"),
                 "mode": "bbox",
-                "map_quality": candidate.get("map_quality", "fallback"),
-                "selector": candidate.get("selector"),
-                "target_tag": candidate.get("tag"),
-                "fallback_tier": candidate.get("fallback_tier"),
+                "map_quality": primary.get("map_quality", "fallback"),
+                "selector": primary.get("selector"),
+                "target_tag": primary.get("tag"),
+                "fallback_tier": primary.get("fallback_tier"),
             }
             return output, metadata
         except Exception as e:
@@ -792,18 +1142,19 @@ class AgenticFlowRunner:
             results=results,
         )
 
-        annotated, annotation_meta = self._create_annotated_screenshot(screenshot, representative)
+        all_failures = summary.get("failures", [])
+        annotated, annotation_meta = self._create_annotated_screenshot(screenshot, all_failures)
         if annotated:
-            print(f"  Annotated screenshot: {Path(annotated).name}")
+            print(f"  Annotated screenshot: {Path(annotated).name} ({len(all_failures)} failures)")
 
         scroll_paths = [item["path"] for item in scroll_shots]
         scroll_annotated_paths: list[str] = []
-        if representative:
+        if all_failures:
             for fold in scroll_shots:
                 try:
                     self._page.evaluate(f"() => window.scrollTo(0, {int(fold['scroll_y'])})")
                     self._page.wait_for_timeout(120)
-                    annotated_fold, _ = self._create_annotated_screenshot(fold["path"], representative)
+                    annotated_fold, _ = self._create_annotated_screenshot(fold["path"], all_failures)
                     if annotated_fold:
                         fold["annotated_path"] = annotated_fold
                         scroll_annotated_paths.append(annotated_fold)
@@ -816,6 +1167,68 @@ class AgenticFlowRunner:
         if summary["failures"]:
             for f in summary["failures"][:5]:
                 print(f"    FAIL [{f['checkpoint']}] {f['rationale'][:70]}")
+
+        # Run supplementary testing methods
+        analysis_cfg = self.config.get("analysis", {})
+        supplementary_tests: dict[str, Any] = {}
+        supp_base = screenshot  # base path for supplementary screenshots
+
+        # axe-core full scan (powers color contrast + screen reader tests)
+        try:
+            from .supplementary_tests import run_axe_scan
+            print("  Running axe-core scan (WCAG 2.1 A+AA)...")
+            supplementary_tests["axe_scan"] = run_axe_scan(self._page)
+            ax = supplementary_tests["axe_scan"]
+            print(f"  axe-core: {ax.get('violations_count', 0)} violations, {ax.get('passes_count', 0)} passes, {ax.get('total_violation_nodes', 0)} nodes")
+        except Exception as e:
+            supplementary_tests["axe_scan"] = {"violations_count": 0, "error": str(e)}
+
+        # Color Contrast (axe-core powered)
+        try:
+            from .supplementary_tests import run_color_contrast_test
+            print("  Running color contrast test (WCAG 1.4.3 / 1.4.11)...")
+            supplementary_tests["color_contrast"] = run_color_contrast_test(self._page, supp_base)
+            cc = supplementary_tests["color_contrast"]
+            print(f"  Color Contrast: {'PASS' if cc.get('passed') else ('FAIL' if cc.get('passed') is False else 'ERROR')} — {cc.get('note','')[:80]}")
+        except Exception as e:
+            supplementary_tests["color_contrast"] = {"passed": None, "error": str(e)}
+
+        if analysis_cfg.get("run_zoom_test", True):
+            try:
+                from .supplementary_tests import run_zoom_test
+                print("  Running zoom test (WCAG 1.4.4 / 1.4.10)...")
+                supplementary_tests["zoom"] = run_zoom_test(self._page, supp_base)
+                z = supplementary_tests["zoom"]
+                print(f"  Zoom: {'PASS' if z.get('passed') else ('FAIL' if z.get('passed') is False else 'ERROR')} — {z.get('note','')[:80]}")
+            except Exception as e:
+                supplementary_tests["zoom"] = {"passed": None, "error": str(e)}
+        if analysis_cfg.get("run_text_spacing_test", True):
+            try:
+                from .supplementary_tests import run_text_spacing_test
+                print("  Running text spacing test (WCAG 1.4.12)...")
+                supplementary_tests["text_spacing"] = run_text_spacing_test(self._page, supp_base)
+                t = supplementary_tests["text_spacing"]
+                print(f"  Text Spacing: {'PASS' if t.get('passed') else ('FAIL' if t.get('passed') is False else 'ERROR')} — {t.get('note','')[:80]}")
+            except Exception as e:
+                supplementary_tests["text_spacing"] = {"passed": None, "error": str(e)}
+        if analysis_cfg.get("run_keyboard_test", True):
+            try:
+                from .supplementary_tests import run_keyboard_test
+                print("  Running keyboard navigation test (WCAG 2.1.1 / 2.4.7)...")
+                supplementary_tests["keyboard"] = run_keyboard_test(self._page, supp_base)
+                k = supplementary_tests["keyboard"]
+                print(f"  Keyboard: {'PASS' if k.get('passed') else ('FAIL' if k.get('passed') is False else 'ERROR')} — {k.get('note','')[:80]}")
+            except Exception as e:
+                supplementary_tests["keyboard"] = {"passed": None, "error": str(e)}
+        if analysis_cfg.get("run_screen_reader_test", True):
+            try:
+                from .supplementary_tests import run_screen_reader_test
+                print("  Running screen reader proxy test (axe-core ARIA + a11y tree)...")
+                supplementary_tests["screen_reader"] = run_screen_reader_test(self._page)
+                sr = supplementary_tests["screen_reader"]
+                print(f"  Screen Reader: {'PASS' if sr.get('passed') else ('FAIL' if sr.get('passed') is False else 'ERROR')} — {sr.get('note','')[:80]}")
+            except Exception as e:
+                supplementary_tests["screen_reader"] = {"passed": None, "error": str(e)}
 
         stem = Path(screenshot).stem
         dom_dump_path = self.run_dir / f"{stem}-dom.html"
@@ -843,6 +1256,12 @@ class AgenticFlowRunner:
             json.dumps(summary, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        # Persist supplementary tests to disk so data survives if process is killed
+        supp_dump_path = self.run_dir / f"{stem}-supplementary.json"
+        supp_dump_path.write_text(
+            json.dumps(supplementary_tests, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
 
         for evaluation in checklist_evaluations:
             evidence = evaluation.get("evidence", {})
@@ -857,6 +1276,7 @@ class AgenticFlowRunner:
             "url": url,
             "unique_key": unique_key,
             "action_source": action_source,
+            "phase": self.current_phase,
             "screenshot": screenshot,
             "annotated_screenshot": annotated,
             "annotation_metadata": annotation_meta,
@@ -871,6 +1291,7 @@ class AgenticFlowRunner:
             "wcag_results": [r.to_dict() for r in results],
             "contrast_evidence": contrast_evidence,
             "checklist_evaluations": checklist_evaluations,
+            "supplementary_tests": supplementary_tests,
         }
         self.screen_results.append(screen_data)
         self._record_action_trace(
@@ -954,13 +1375,19 @@ class AgenticFlowRunner:
         except Exception:
             fallback_dom = f"{normalized_url}|{page_info.get('title', '')}"
             dom_hash = hashlib.sha1(fallback_dom.encode("utf-8")).hexdigest()
-        heading_signature = "|".join(
-            (h.get("text", "") or "").strip().lower()
-            for h in (page_info.get("headings", []) or [])[:12]
+
+        # Template-based dedup: normalize the URL path to collapse detail pages
+        # e.g. /stock/RELIANCE and /stock/TCS → /stock/*
+        import re as _re
+        url_template = _re.sub(
+            r'/([A-Z0-9]{2,20})(?=/|$)',
+            '/*',
+            normalized_url.split("//", 1)[-1].split("/", 1)[-1] if "//" in normalized_url else normalized_url,
         )
-        title_heading = f"{(page_info.get('title', '') or '').strip().lower()}|{heading_signature}"
-        title_heading_hash = hashlib.sha1(title_heading.encode("utf-8")).hexdigest()[:16]
-        return f"{normalized_url}|{dom_hash[:16]}|{title_heading_hash}"
+
+        # Use DOM structure (tag counts + interactive layout) as primary dedup —
+        # this catches pages with the same template but different data
+        return f"{url_template}|{dom_hash[:24]}"
 
     def _record_action_trace(self, action: str, source: str, details: dict[str, Any]) -> None:
         self.action_trace.append(
@@ -1051,28 +1478,61 @@ class AgenticFlowRunner:
         selector = action.get("selector", "input")
         value = action["value"]
         print(f"  Filling '{selector}' with '{value}'")
-        
-        # Try to find exactly what the user asked for
+
+        # Try Playwright fill first
+        try:
+            self._page.fill(selector, value, timeout=3000)
+            return
+        except Exception:
+            pass
+
+        # Fallback: find element and try click + fill
         els = self._page.query_selector_all(selector)
         target = None
         for el in els:
-            if el.is_visible():
+            box = el.bounding_box()
+            if box and box["width"] > 0 and box["height"] > 0:
                 type_attr = el.get_attribute("type") or ""
                 if type_attr.lower() not in ["radio", "checkbox", "hidden"]:
-                    # Ensure it has a bounding box
-                    box = el.bounding_box()
-                    if box and box["width"] > 0 and box["height"] > 0:
-                        target = el
-                        break
-        
+                    target = el
+                    break
+
         if target:
             try:
                 target.click(force=True, timeout=3000)
             except Exception:
-                pass  # if click fails, try filling anyway
-            target.fill(value)
-        else:
-            print("  ⚠️ No suitable visible input found for filling.")
+                pass
+            try:
+                target.fill(value)
+                return
+            except Exception:
+                pass
+            # JS fallback for stubborn fields
+            try:
+                self._page.evaluate(
+                    """(args) => {
+                        const el = document.querySelector(args.sel);
+                        if (el) { el.value = args.val; el.dispatchEvent(new Event('input', {bubbles:true})); el.dispatchEvent(new Event('change', {bubbles:true})); }
+                    }""",
+                    {"sel": selector, "val": value},
+                )
+                print(f"  Filled via JS fallback")
+                return
+            except Exception:
+                pass
+
+        # Last resort: JS querySelector
+        try:
+            self._page.evaluate(
+                """(args) => {
+                    const el = document.querySelector(args.sel);
+                    if (el) { el.value = args.val; el.dispatchEvent(new Event('input', {bubbles:true})); el.dispatchEvent(new Event('change', {bubbles:true})); }
+                }""",
+                {"sel": selector, "val": value},
+            )
+            print(f"  Filled via JS fallback")
+        except Exception:
+            print("  ⚠️ Could not fill field.")
 
     def _execute_click(self, action: dict):
         selector = action.get("selector", "button")
@@ -1086,23 +1546,34 @@ class AgenticFlowRunner:
                 # Try forced click on same selector
                 self._page.click(selector, timeout=3000, force=True)
             except Exception:
-                # Fallbacks
-                desc = action.get("description", "")
-                if "Get Started" in desc:
-                    try:
-                        self._page.click("text=Get Started", timeout=3000, force=True)
-                    except Exception:
-                        pass
-                else:
-                    buttons = self._page.query_selector_all("button:visible, [role='button']:visible")
-                    if buttons:
+                # Try JS click (works for <a> tags and hidden elements)
+                try:
+                    clicked = self._page.evaluate(
+                        """(sel) => { const el = document.querySelector(sel); if (el) { el.click(); return true; } return false; }""",
+                        selector,
+                    )
+                    if clicked:
+                        print(f"  Clicked via JS fallback")
+                except Exception:
+                    pass
+                if self._page.url == before_url:
+                    # Fallbacks
+                    desc = action.get("description", "")
+                    if "Get Started" in desc:
                         try:
-                            buttons[-1].click(timeout=3000, force=True)  # usually submit is last
+                            self._page.click("text=Get Started", timeout=3000, force=True)
                         except Exception:
+                            pass
+                    else:
+                        buttons = self._page.query_selector_all("button:visible, [role='button']:visible, a:visible")
+                        if buttons:
                             try:
-                                buttons[0].click(timeout=3000, force=True)
+                                buttons[-1].click(timeout=3000, force=True)
                             except Exception:
-                                pass
+                                try:
+                                    buttons[0].click(timeout=3000, force=True)
+                                except Exception:
+                                    pass
         self._page.wait_for_timeout(700)
         after_url = self._page.url
         self._record_route_event(
@@ -1121,42 +1592,100 @@ class AgenticFlowRunner:
         otp = action["value"]
         print(f"  Entering OTP: {otp}")
         before_url = self._page.url
-        self._page.wait_for_timeout(1000)
-        otp_inputs = self._page.query_selector_all("input[type='tel'], input[type='number'], input[type='text']")
-        otp_boxes = [inp for inp in otp_inputs if self._page.evaluate(
-            "(el) => { const r = el.getBoundingClientRect(); return r.width < 80 && r.width > 20; }", inp
-        )]
-        if len(otp_boxes) >= len(otp):
-            for i, digit in enumerate(otp):
-                otp_boxes[i].click()
-                otp_boxes[i].fill(digit)
-                self._page.wait_for_timeout(200)
+        self._page.wait_for_timeout(1500)
+
+        # Strategy 1: Look for OTP inputs with tg-nm="otp" (ICICI pattern)
+        tagged_inputs = self._page.query_selector_all("input[tg-nm='otp']")
+        if tagged_inputs:
+            first = tagged_inputs[0]
+            maxlen = int(first.get_attribute("maxlength") or "1")
+            if maxlen >= len(otp):
+                # Single field accepts full OTP
+                first.click()
+                first.fill(otp)
+                print(f"  Filled full OTP in single field (maxlength={maxlen})")
+            else:
+                for i, digit in enumerate(otp):
+                    if i < len(tagged_inputs):
+                        tagged_inputs[i].click()
+                        tagged_inputs[i].fill(digit)
+                        self._page.wait_for_timeout(150)
         else:
-            visible_inputs = self._page.query_selector_all("input:not([type='radio']):not([type='checkbox']):not([type='hidden']):visible")
-            if visible_inputs:
+            # Strategy 2: Small input boxes (original approach)
+            otp_inputs = self._page.query_selector_all("input[type='tel'], input[type='number'], input[type='text']")
+            otp_boxes = [inp for inp in otp_inputs if self._page.evaluate(
+                "(el) => { const r = el.getBoundingClientRect(); return r.width < 80 && r.width > 20; }", inp
+            )]
+            if len(otp_boxes) >= len(otp):
+                # Check if first box accepts full OTP
+                maxlen = int(otp_boxes[0].get_attribute("maxlength") or "1")
+                if maxlen >= len(otp):
+                    otp_boxes[0].click()
+                    otp_boxes[0].fill(otp)
+                    print(f"  Filled full OTP in first box (maxlength={maxlen})")
+                else:
+                    for i, digit in enumerate(otp):
+                        otp_boxes[i].click()
+                        otp_boxes[i].fill(digit)
+                        self._page.wait_for_timeout(200)
+            else:
+                visible_inputs = self._page.query_selector_all("input:not([type='radio']):not([type='checkbox']):not([type='hidden']):visible")
+                if visible_inputs:
+                    try:
+                        visible_inputs[0].click(force=True, timeout=3000)
+                    except Exception:
+                        pass
+                    for digit in otp:
+                        self._page.keyboard.type(digit)
+                        self._page.wait_for_timeout(100)
+
+        # Try clicking verify/submit button (page may navigate immediately after OTP fill)
+        try:
+            self._page.wait_for_timeout(500)
+            submitted = False
+            for text in ["Verify", "Submit", "Continue", "Confirm"]:
                 try:
-                    visible_inputs[0].click(force=True, timeout=3000)
+                    btn = self._page.query_selector(f"button:has-text('{text}'), [role='button']:has-text('{text}'), a:has-text('{text}')")
+                    if btn and btn.is_visible():
+                        print(f"  Clicking '{text}' button")
+                        btn.click()
+                        submitted = True
+                        break
+                except Exception:
+                    break  # context destroyed = page navigated = OTP worked
+
+            if not submitted:
+                print("  No submit button found, pressing Enter")
+                try:
+                    self._page.keyboard.press("Enter")
                 except Exception:
                     pass
-                for digit in otp:
-                    self._page.keyboard.type(digit)
-                    self._page.wait_for_timeout(100)
-        self._page.wait_for_timeout(500)
-        for text in ["Verify", "Submit", "Continue", "Confirm"]:
-            btn = self._page.query_selector(f"button:has-text('{text}'), [role='button']:has-text('{text}')")
-            if btn and btn.is_visible():
-                print(f"  Clicking '{text}' button")
-                btn.click()
-                break
-        self._page.wait_for_timeout(700)
+        except Exception:
+            print("  Page navigated after OTP (auto-submit)")
+
+        # Wait for navigation to complete
+        try:
+            self._page.wait_for_load_state("domcontentloaded", timeout=15000)
+        except Exception:
+            pass
+        try:
+            self._page.wait_for_timeout(3000)
+        except Exception:
+            pass
+
+        try:
+            after_url = self._page.url
+        except Exception:
+            after_url = "unknown"
+        print(f"  After OTP: {after_url}")
         self._record_route_event(
             event_type="scripted_otp_submit",
             source="scripted",
             from_url=before_url,
-            to_url=self._page.url,
+            to_url=after_url,
             details={
                 "description": action.get("description", ""),
-                "url_changed": self._page.url != before_url,
+                "url_changed": after_url != before_url,
             },
         )
 
@@ -1389,6 +1918,15 @@ class AgenticFlowRunner:
             except Exception:
                 checks.append(False)
 
+        # Support "completion_url_changed": true — completes when current URL
+        # differs from the URL at the start of the manual step.
+        if action.get("completion_url_changed"):
+            start = str(action.get("_start_url") or "").strip()
+            if start and self._normalize_url(current_url) != self._normalize_url(start):
+                checks.append(True)
+            elif start:
+                checks.append(False)
+
         if not checks:
             return False
 
@@ -1403,6 +1941,8 @@ class AgenticFlowRunner:
 
         start_url = self._page.url
         last_url = start_url
+        # Inject start URL so completion_url_changed can compare against it
+        action["_start_url"] = start_url
         print(f"  Manual step: {instructions}")
         print(f"  Waiting up to {timeout_ms // 1000} seconds for completion...")
         self._record_route_event(
@@ -1481,7 +2021,9 @@ class AgenticFlowRunner:
                 "timeout_ms": timeout_ms,
             },
         )
-        raise TimeoutError(f"Manual step timed out after {timeout_ms} ms: {instructions}")
+        # Don't crash on timeout — just warn and continue to next flow step.
+        # This allows multi-section SPA pages to proceed even when the URL doesn't change.
+        print(f"  Manual step timed out after {timeout_ms // 1000}s — continuing to next step.")
 
     def _infer_fill_context(self, reason: str, element_info: dict[str, Any] | None) -> str:
         info = element_info or {}
@@ -1660,17 +2202,123 @@ class AgenticFlowRunner:
     # LLM-guided deep exploration
     # ------------------------------------------------------------------
 
+    def _is_error_page(self) -> bool:
+        """Return True if the current page is a generic error/404 page that should be skipped."""
+        url = self._page.url.lower()
+        error_patterns = ["/error/", "/errorpage", "/notfound", "/404", "/500", "/403"]
+        if any(p in url for p in error_patterns):
+            return True
+        try:
+            title = self._page.title().lower()
+            if any(t in title for t in ["error", "not found", "page not found", "404"]):
+                return True
+        except Exception:
+            pass
+        return False
+
+    def _inject_explore_panel(self):
+        """Inject the floating explore control panel into the page."""
+        try:
+            self._page.evaluate(INJECT_EXPLORE_PANEL_JS)
+        except Exception:
+            pass
+
+    def _check_explore_pause(self) -> None:
+        """If paused, wait for user to click Scan This Page or Continue Scanning."""
+        try:
+            paused = self._page.evaluate("window.__a11y_explore_paused === true")
+        except Exception:
+            return
+
+        if not paused:
+            return
+
+        print(f"\n  ⏸  PAUSED — Click 'Scan This Page' or 'Continue Scanning' in the browser", flush=True)
+        while True:
+            try:
+                # Check scan request
+                scan_req = self._page.evaluate("window.__a11y_explore_scan_request === true")
+                if scan_req:
+                    self._page.evaluate("window.__a11y_explore_scan_request = false")
+                    screen_count = len(self.screen_results) + 1
+                    label = f"manual-{screen_count}"
+                    print(f"  ♿  Manual scan requested: {self._page.url}", flush=True)
+                    try:
+                        self._page.evaluate(f"window.__a11y_panel_set_status('Scanning...')")
+                    except Exception:
+                        pass
+                    result = self._analyze_current_screen(label, action_source="manual_panel")
+                    if result.get("captured"):
+                        fails = sum(1 for r in result.get("wcag_results", []) if r.get("status") == "Fail")
+                        passes = sum(1 for r in result.get("wcag_results", []) if r.get("status") == "Pass")
+                        print(f"    Done: {fails} failures, {passes} passes", flush=True)
+                        try:
+                            self._page.evaluate(f"window.__a11y_panel_set_status('{fails}F / {passes}P')")
+                            self._page.evaluate(f"window.__a11y_panel_set_screens({len(self.screen_results)})")
+                        except Exception:
+                            pass
+                    else:
+                        print(f"    Skipped (duplicate)", flush=True)
+                    try:
+                        self._page.evaluate("window.__a11y_panel_scan_done()")
+                    except Exception:
+                        pass
+                    self._inject_explore_panel()
+                    continue
+
+                # Check continue
+                cont = self._page.evaluate("window.__a11y_explore_continue === true")
+                if cont:
+                    self._page.evaluate("window.__a11y_explore_continue = false")
+                    print(f"  ▶  Resuming auto scan...", flush=True)
+                    return
+
+                # Check if still paused
+                still_paused = self._page.evaluate("window.__a11y_explore_paused === true")
+                if not still_paused:
+                    return
+
+            except Exception:
+                self._inject_explore_panel()
+
+            time.sleep(0.5)
+
     def _execute_explore(self):
         """LLM-guided exploration with deterministic fallback to maximize unique screens."""
         analysis_cfg = self.config.get("analysis", {})
         max_screens = analysis_cfg.get("max_screens", 200)
         max_steps = analysis_cfg.get("max_explore_depth", 600)
         stagnation_window = analysis_cfg.get("stagnation_window", 40)
+        max_consecutive_failures = analysis_cfg.get("max_consecutive_failures", 10)
         llm_failure_fallback = analysis_cfg.get("llm_failure_fallback", True)
 
         print(f"\n{'*'*60}")
         print(f"  LLM-GUIDED DEEP EXPLORATION (target: {max_screens} screens)")
         print(f"{'*'*60}")
+
+        # Inject explore control panel
+        self._inject_explore_panel()
+
+        # Phase 0: visit seed URLs from config before LLM-guided exploration
+        seed_urls = analysis_cfg.get("seed_urls", [])
+        if seed_urls:
+            print(f"\n  Visiting {len(seed_urls)} seed URLs first...")
+            for seed_url in seed_urls:
+                if len(self.screen_results) >= max_screens:
+                    break
+                try:
+                    self._safe_goto(seed_url)
+                    self._page.wait_for_timeout(2000)
+                    if self._is_error_page():
+                        print(f"  Seed URL error page, skipping: {seed_url[:70]}")
+                        continue
+                    self._analyze_current_screen(
+                        f"seed-{seed_url.split('/')[-1][:25]}",
+                        action_source="seed",
+                    )
+                    print(f"  Seed captured: {seed_url[:70]}")
+                except Exception as e:
+                    print(f"  Seed URL failed: {seed_url[:70]} — {e}")
 
         # Inject deeper exploration instructions into the router
         self.router._history = []  # fresh context for exploration
@@ -1682,6 +2330,15 @@ class AgenticFlowRunner:
         consecutive_failures = 0
         stagnant_attempts = 0
         for step in range(max_steps):
+            # Check if user paused via the control panel
+            self._check_explore_pause()
+            # Re-inject panel in case page navigation removed it
+            self._inject_explore_panel()
+            try:
+                self._page.evaluate(f"window.__a11y_panel_set_screens({len(self.screen_results)})")
+            except Exception:
+                pass
+
             if len(self.screen_results) >= max_screens:
                 print(f"\n  Reached target screen limit ({max_screens})")
                 break
@@ -1693,20 +2350,33 @@ class AgenticFlowRunner:
                         stagnant_attempts = 0
                         consecutive_failures = 0
                         continue
-                print(
-                    f"\n  Stopping exploration after {stagnation_window} attempts without a new unique screen"
-                )
-                break
+                # Reset stagnation counter and continue — don't stop the whole scan just
+                # because one region stagnated; let the LLM try different routes.
+                print(f"\n  Stagnation window hit. Resetting and retrying with fresh LLM context.")
+                stagnant_attempts = 0
+                consecutive_failures = 0
+                # Inject a nudge into the LLM history to try something different
+                self.router._history.append({
+                    "role": "user",
+                    "content": (
+                        "You have been exploring the same screens for too long without finding new ones. "
+                        "Please try a completely different section of the application. "
+                        f"You have covered {len(self.screen_results)} screens so far. "
+                        "Look for unexplored major sections, sub-menus, or settings you haven't visited yet."
+                    ),
+                })
 
-            if consecutive_failures >= 5:
+            if consecutive_failures >= max_consecutive_failures:
                 if analysis_cfg.get("manual_assist_on_stall"):
                     assisted = self._run_manual_exploration_assist("consecutive_failures")
                     if assisted > 0:
                         stagnant_attempts = 0
                         consecutive_failures = 0
                         continue
-                print(f"\n  Too many consecutive failures, moving on")
-                break
+                # Reset and continue instead of stopping — try a different approach
+                print(f"\n  Too many consecutive failures. Resetting and retrying.")
+                consecutive_failures = 0
+                stagnant_attempts = 0
 
             if not self._is_page_alive():
                 recovered = self._recover_closed_page()
@@ -1831,6 +2501,33 @@ class AgenticFlowRunner:
                             continue
 
                         self._page.wait_for_timeout(2000)
+                        # If click navigated to an out-of-domain page, go back
+                        allowed_domain = self.config.get("domain", "")
+                        if allowed_domain and allowed_domain not in self._page.url:
+                            print(f"  Out-of-domain after click: {self._page.url[:70]}, going back")
+                            if self._nav_stack:
+                                self._safe_goto(self._nav_stack.pop())
+                            else:
+                                try:
+                                    self._page.go_back(wait_until="domcontentloaded", timeout=8000)
+                                except Exception:
+                                    pass
+                            self._page.wait_for_timeout(1000)
+                            stagnant_attempts += 1
+                            continue
+                        # If click navigated to an error page, go back
+                        if self._is_error_page():
+                            print(f"  Error page after click, going back")
+                            if self._nav_stack:
+                                self._safe_goto(self._nav_stack.pop())
+                            else:
+                                try:
+                                    self._page.go_back(wait_until="domcontentloaded", timeout=8000)
+                                except Exception:
+                                    pass
+                            self._page.wait_for_timeout(1000)
+                            stagnant_attempts += 1
+                            continue
                         self._record_route_event(
                             event_type="explore_click",
                             source=action_source,
@@ -1864,12 +2561,31 @@ class AgenticFlowRunner:
 
             elif action == "navigate":
                 url = decision.get("url", "")
+                # Enforce domain restriction if configured
+                allowed_domain = self.config.get("domain", "")
+                if allowed_domain and url and allowed_domain not in url and url.startswith("http"):
+                    print(f"  Skipping out-of-domain URL: {url[:70]}")
+                    stagnant_attempts += 1
+                    continue
                 if url and not self._is_url_visited(url):
                     print(f"  Navigating: {url[:70]}")
                     try:
                         self._nav_stack.append(current_url)
                         self._safe_goto(url)
                         self._page.wait_for_timeout(2000)
+                        # If we landed on an error page, go back without counting as failure
+                        if self._is_error_page():
+                            print(f"  Error page detected at {self._page.url[:60]}, going back")
+                            if self._nav_stack:
+                                self._safe_goto(self._nav_stack.pop())
+                            else:
+                                try:
+                                    self._page.go_back(wait_until="domcontentloaded", timeout=8000)
+                                except Exception:
+                                    pass
+                            self._page.wait_for_timeout(1000)
+                            stagnant_attempts += 1
+                            continue
                         self._record_route_event(
                             event_type="explore_navigate",
                             source=action_source,
@@ -2044,7 +2760,14 @@ class AgenticFlowRunner:
                 last_activity = time.time()
                 continue
 
-            if captured > 0 and (time.time() - last_activity) * 1000 >= idle_ms:
+            # Exit if idle (whether or not we captured anything):
+            # - if captured > 0: exit after idle_ms of no new activity
+            # - if captured == 0: exit after no_activity_timeout_ms (default 45s) to avoid blocking automated runs
+            no_activity_timeout_ms = int(analysis_cfg.get("manual_assist_no_activity_timeout_ms", 45000) or 45000)
+            elapsed_since_activity_ms = (time.time() - last_activity) * 1000
+            if captured > 0 and elapsed_since_activity_ms >= idle_ms:
+                break
+            if captured == 0 and elapsed_since_activity_ms >= no_activity_timeout_ms:
                 break
 
         self._record_route_event(
@@ -2084,7 +2807,12 @@ class AgenticFlowRunner:
             start_url = self.config["start_url"]
             print(f"\n  Navigating to {start_url}")
             self._safe_goto(start_url)
-            self._page.wait_for_timeout(2000)
+            # Extra settle time for sites that redirect immediately after initial load
+            try:
+                self._page.wait_for_load_state("networkidle", timeout=15000)
+            except Exception:
+                pass
+            self._page.wait_for_timeout(4000)
             self._record_route_event(
                 event_type="start_navigation",
                 source="initial",
@@ -2096,7 +2824,12 @@ class AgenticFlowRunner:
                 },
             )
 
-            self._analyze_current_screen("01-initial-load", action_source="initial")
+            # Skip initial page analysis if first flow step is a manual login
+            first_step = (self.config.get("flow_steps") or [{}])[0] if self.config.get("flow_steps") else {}
+            first_actions = first_step.get("actions", [])
+            skip_initial = any(a.get("type") == "manual" for a in first_actions)
+            if not skip_initial:
+                self._analyze_current_screen("01-initial-load", action_source="initial")
 
             for step in self.config.get("flow_steps", []):
                 step_id = step.get("id", "unknown")
@@ -2104,6 +2837,8 @@ class AgenticFlowRunner:
                 if not self._should_run_step(step):
                     print(f"\n  Skipping step in {self.scan_mode} mode: {desc}")
                     continue
+                # Update current_phase so screens captured in this step are tagged correctly
+                self.current_phase = "post_login" if self._step_scope(step) == "post_login" else "pre_login"
                 print(f"\n{'─'*60}")
                 print(f"  STEP: {desc}")
                 print(f"{'─'*60}")
@@ -2144,6 +2879,10 @@ class AgenticFlowRunner:
                         self._execute_fill(action)
                     elif action_type == "click":
                         self._execute_click(action)
+                    elif action_type == "navigate":
+                        url = action.get("url", "")
+                        print(f"  Navigating to: {url}")
+                        self._safe_goto(url)
                     elif action_type == "otp":
                         self._execute_otp(action)
                     elif action_type == "pin":
@@ -2193,12 +2932,22 @@ class AgenticFlowRunner:
             try:
                 from ..xlsx_report import generate_xlsx_report
                 xlsx_path = self.run_dir / "wcag_report.xlsx"
-                generate_xlsx_report(report, str(xlsx_path))
+                generate_xlsx_report(report, str(xlsx_path), uploader=self.uploader)
                 print(f"  XLSX report saved: {xlsx_path}")
             except Exception as e:
                 print(f"  ⚠️  XLSX generation failed: {e}")
 
             self._print_summary(report)
+
+            # Generate phase-split sub-reports (pre_login and post_login)
+            print(f"\n{'─'*60}")
+            print(f"  Generating phase-split reports...")
+            print(f"{'─'*60}")
+            self._generate_phase_artifacts("pre_login", self.run_dir / "pre_login", run_id)
+            self._generate_phase_artifacts("post_login", self.run_dir / "post_login", run_id)
+
+            # Upload artifacts to S3
+            self._upload_artifacts_to_s3(run_id)
 
             print(f"\n  Browser stays open for 10 seconds for inspection...")
             time.sleep(10)
@@ -2207,6 +2956,60 @@ class AgenticFlowRunner:
             self._close_browser()
 
         return report
+
+    def _generate_phase_artifacts(self, phase: str, phase_dir: Path, base_run_id: str) -> None:
+        """Build and save a complete report set (JSON, XLSX, checklist, evidence) for a single phase."""
+        phase_screens = [s for s in self.screen_results if s.get("phase") == phase]
+        if not phase_screens:
+            print(f"  No screens tagged as '{phase}', skipping sub-report")
+            return
+
+        phase_dir.mkdir(parents=True, exist_ok=True)
+        phase_run_id = f"{base_run_id}-{phase}"
+
+        # Temporarily narrow screen_results to this phase so _build_report and helpers filter correctly
+        original_screens = self.screen_results
+        self.screen_results = phase_screens
+        try:
+            report = self._build_report(phase_run_id)
+            report["phase"] = phase
+
+            checklist_reports_root = generate_checklist_reports(report, phase_dir)
+            report["checklist_reports_root"] = checklist_reports_root
+
+            evidence_index = self._build_evidence_index(phase_run_id)
+            evidence_path = phase_dir / "evidence-index.json"
+            with open(evidence_path, "w") as f:
+                json.dump(evidence_index, f, indent=2, default=str)
+
+            route_log_payload = {
+                "run_id": phase_run_id,
+                "standard": WCAG_STANDARD_LABEL,
+                "phase": phase,
+                "urls_visited": report.get("urls_visited", []),
+                "route_log": self.route_log,
+            }
+            route_log_path = phase_dir / "route-log.json"
+            with open(route_log_path, "w") as f:
+                json.dump(route_log_payload, f, indent=2, default=str)
+
+            report["evidence_index_artifact"] = str(evidence_path)
+            report["route_log_artifact"] = str(route_log_path)
+
+            report_path = phase_dir / "agentic-report.json"
+            with open(report_path, "w") as f:
+                json.dump(report, f, indent=2, default=str)
+            print(f"  [{phase}] Report saved: {report_path}")
+
+            try:
+                from ..xlsx_report import generate_xlsx_report
+                xlsx_path = phase_dir / "wcag_report.xlsx"
+                generate_xlsx_report(report, str(xlsx_path), uploader=self.uploader)
+                print(f"  [{phase}] XLSX saved: {xlsx_path}")
+            except Exception as e:
+                print(f"  ⚠️  [{phase}] XLSX generation failed: {e}")
+        finally:
+            self.screen_results = original_screens
 
     def _build_report(self, run_id: str) -> dict[str, Any]:
         all_failures = []
@@ -2248,6 +3051,7 @@ class AgenticFlowRunner:
         return {
             "run_id": run_id,
             "config": self.config["name"],
+            "start_url": self.config.get("start_url", ""),
             "standard": WCAG_STANDARD_LABEL,
             "scan_mode": self.scan_mode,
             "cannot_verify_policy": self.analyzer.cannot_verify_policy,
@@ -2286,6 +3090,8 @@ class AgenticFlowRunner:
                     "wcag_results": s.get("wcag_results", []),
                     "contrast_evidence": s.get("contrast_evidence", {}),
                     "checklist_evaluations": s.get("checklist_evaluations", []),
+                    "supplementary_tests": s.get("supplementary_tests", {}),
+                    "supplementary": s.get("supplementary_tests", {}),
                 }
                 for s in self.screen_results
             ],

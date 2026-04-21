@@ -1,0 +1,45 @@
+{
+  "name": "KINSITE Web - Pre Login",
+  "app_id": "KSLKINSITEPRELOGIN",
+  "start_url": "https://kie.kotak.com/kinsite",
+  "domain": "kotak.com",
+  "flow_steps": [
+    {
+      "id": "homepage",
+      "description": "Scan the Kinsite homepage",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_pre_login",
+      "description": "Explore all public pre-login pages",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all public pages — Home, Companies, Sectors, Teams, Events, Search, Contact, Reports, and any other pre-login pages. Do NOT click Login or Sign In."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 200,
+    "max_screens": 60,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 15,
+    "strict_flow_actions": false,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": false,
+    "run_text_spacing_test": false,
+    "run_keyboard_test": false,
+    "run_screen_reader_test": false
+  }
+}

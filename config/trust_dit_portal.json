@@ -1,0 +1,104 @@
+{
+  "name": "Trust DIT Portal",
+  "app_id": "TRUSTDIT",
+  "start_url": "https://clientwebsitesuat2.kfintech.com/trust_dit_portal/",
+  "domain": "clientwebsitesuat2.kfintech.com",
+  "flow_steps": [
+    {
+      "id": "landing_scan",
+      "description": "Scan the landing/login page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_login",
+      "description": "User logs in with username, password and OTP",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Login with Username: demouser, Password: Welcome@321, OTP: 123456. Complete captcha if needed.",
+          "instructions": "Enter username demouser, password Welcome@321, submit, enter OTP 123456. Scanner auto-continues when URL changes.",
+          "completion_url_not_contains": ["/login"],
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated routes — Dashboard, Reports, Transactions, Settings, and any other available sections."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 300,
+    "max_screens": 80,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 25,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a DIT portal user exploring the Trust DIT system. Navigate through all available sections including dashboard, reports, data management, settings, and any other features.",
+      "major_sections": [
+        "dashboard",
+        "reports",
+        "transactions",
+        "data",
+        "settings",
+        "administration"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "report",
+        "transaction",
+        "data",
+        "settings",
+        "admin",
+        "upload",
+        "download",
+        "history",
+        "account",
+        "manage"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal"
+      ],
+      "journey_rules": [
+        "Click each main navigation item one by one.",
+        "Explore all sub-menus, tabs, and expandable sections.",
+        "If you see dropdown menus, hover/click to reveal sub-items.",
+        "Do NOT click logout or sign out.",
+        "Do NOT submit any actual forms — only explore the interface."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

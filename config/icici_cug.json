@@ -1,0 +1,133 @@
+{
+  "name": "ICICI Securities CUG Pre-Login",
+  "app_id": "ICICICUS",
+  "start_url": "https://cug.icicisecurities.com/",
+  "domain": "cug.icicisecurities.com",
+  "flow_steps": [
+    {
+      "id": "pre_login_explore",
+      "description": "Explore all publicly accessible pages of the ICICI Securities CUG website",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all pre-login pages of cug.icicisecurities.com including about, offerings, investor relations, media, policies, and all sub-sections"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 800,
+    "max_screens": 200,
+    "max_consecutive_failures": 20,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 60,
+    "manual_assist_on_stall": false,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "seed_urls": [
+      "https://cug.icicisecurities.com/",
+      "https://cug.icicisecurities.com/about-us",
+      "https://cug.icicisecurities.com/our-offerings-investments",
+      "https://cug.icicisecurities.com/our-offerings-wealth-management",
+      "https://cug.icicisecurities.com/our-offerings-institutional-business",
+      "https://cug.icicisecurities.com/our-offerings-pms",
+      "https://cug.icicisecurities.com/other-offerings",
+      "https://cug.icicisecurities.com/investor-relation-financial",
+      "https://cug.icicisecurities.com/shareholder-dividend-information",
+      "https://cug.icicisecurities.com/debenture-holders-information",
+      "https://cug.icicisecurities.com/statement-of-unpaid-unclaimed-dividend",
+      "https://cug.icicisecurities.com/commercial-papers",
+      "https://cug.icicisecurities.com/ncd-issuance",
+      "https://cug.icicisecurities.com/other-information",
+      "https://cug.icicisecurities.com/media-center",
+      "https://cug.icicisecurities.com/offer-documents",
+      "https://cug.icicisecurities.com/corporate-policies",
+      "https://cug.icicisecurities.com/privacy-policy",
+      "https://cug.icicisecurities.com/disclaimers",
+      "https://cug.icicisecurities.com/cookies-policy",
+      "https://cug.icicisecurities.com/regulatory-disclosure",
+      "https://cug.icicisecurities.com/wfrmdiscsebilodr",
+      "https://cug.icicisecurities.com/careers",
+      "https://cug.icicisecurities.com/careers-current-opening",
+      "https://cug.icicisecurities.com/careers-life-at-icicisecurities",
+      "https://cug.icicisecurities.com/careers-job-role-responsibilities?job=MTA=",
+      "https://cug.icicisecurities.com/careers-job-role-responsibilities?job=MTE=",
+      "https://cug.icicisecurities.com/careers-job-role-responsibilities?job=OQ==",
+      "https://cug.icicisecurities.com/csr",
+      "https://cug.icicisecurities.com/environment",
+      "https://cug.icicisecurities.com/healthcare",
+      "https://cug.icicisecurities.com/sustainable-livelihood",
+      "https://cug.icicisecurities.com/contact-us"
+    ],
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true,
+    "exploration_profile": {
+      "persona": "Explore the full ICICI Securities CUG public website as a visitor. Cover every page including About Us sections, all Offerings pages, Investor Relations sub-pages, Media Centre, all policy/legal pages, and any other accessible content.",
+      "major_sections": [
+        "about-us",
+        "our-offerings-investments",
+        "our-offerings-wealth-management",
+        "our-offerings-institutional-business",
+        "other-offerings",
+        "investor-relation-financial",
+        "shareholder-dividend-information",
+        "debenture-holders-information",
+        "media-center",
+        "offer-documents",
+        "corporate-policies",
+        "privacy-policy",
+        "disclaimers",
+        "cookies-policy",
+        "regulatory-disclosure"
+      ],
+      "preferred_tokens": [
+        "about",
+        "offerings",
+        "investor",
+        "media",
+        "policy",
+        "corporate",
+        "financial",
+        "shareholder",
+        "debenture",
+        "disclosure",
+        "document",
+        "report",
+        "careers",
+        "csr",
+        "contact"
+      ],
+      "avoid_tokens": [
+        "login",
+        "signin",
+        "open account",
+        "icicidirect.com",
+        "play.google.com",
+        "apps.apple.com",
+        "instagram",
+        "facebook",
+        "twitter",
+        "linkedin",
+        "youtube"
+      ],
+      "journey_rules": [
+        "Stay strictly within the cug.icicisecurities.com domain \u2014 do NOT navigate to external domains like icicidirect.com, secure.icicidirect.com, or opendemat.icicidirect.com.",
+        "Explore all sub-sections within each main nav item: About Us has History, Board, Awards, Testimonials tabs.",
+        "In Investor Relations, explore all sub-pages: Financial, Shareholder, Debenture Holders.",
+        "In Our Offerings, explore all four sub-pages: Investments, Wealth Management, Institutional Business, Other Offerings.",
+        "Look for accordions, tabs, modals, and expandable sections on each page.",
+        "Scroll each page fully to capture all content sections."
+      ]
+    }
+  }
+}

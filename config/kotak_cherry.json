@@ -1,0 +1,188 @@
+{
+  "name": "Kotak Cherry",
+  "app_id": "KOTAKCHERRY",
+  "start_url": "https://cherry.kotak.bank.in/",
+  "domain": "cherry.kotak.bank.in",
+  "flow_steps": [
+    {
+      "id": "landing",
+      "description": "Landing page initial load",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_tab",
+      "description": "Explore tab",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "dashboard_tab",
+      "description": "Dashboard tab",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Dashboard"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "holdings_tab",
+      "description": "Holdings tab",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Holdings"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "sips_tab",
+      "description": "SIPs and more tab",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=SIPs and more"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "orders_tab",
+      "description": "Orders tab",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Orders"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "my_first_sip",
+      "description": "My first SIP collection",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=My first SIP"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "top_performer",
+      "description": "Top performer collection",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=Top performer"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "multi_asset",
+      "description": "Multi asset funds collection",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=Multi asset funds"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "index_funds",
+      "description": "Index funds collection",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=Index funds"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "large_caps",
+      "description": "Large caps collection",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=Large caps"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "nfos",
+      "description": "NFOs collection",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=NFOs"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "all_funds",
+      "description": "All funds page",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=All funds"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "all_amcs",
+      "description": "All AMCs page",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=All AMCs"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "amc_kotak",
+      "description": "Kotak AMC",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=Kotak"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "amc_sbi",
+      "description": "SBI AMC",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "text=Explore"},
+        {"type": "click", "selector": "text=SBI"}
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "search",
+      "description": "Search functionality",
+      "scan_scope": "pre_login",
+      "actions": [
+        {"type": "click", "selector": "[placeholder*='Search']"}
+      ],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 300,
+    "max_screens": 100,
+    "unique_screen_dedup": false,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

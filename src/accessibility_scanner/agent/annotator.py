@@ -55,12 +55,12 @@ CHECKPOINT_SEVERITY: dict[str, str] = {
 
 _SEVERITY_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 ISSUE_SEVERITY_COLORS = {
-    "critical": ((220, 0, 0, 110), (170, 0, 0), (170, 0, 0)),
-    "high": ((255, 80, 0, 110), (200, 60, 0), (200, 60, 0)),
-    "warning": ((220, 140, 0, 110), (170, 110, 0), (170, 110, 0)),
-    "medium": ((220, 140, 0, 110), (170, 110, 0), (170, 110, 0)),
-    "low": ((0, 120, 210, 110), (0, 90, 170), (0, 90, 170)),
-    "pass": ((0, 140, 60, 90), (0, 120, 50), (0, 120, 50)),
+    "critical": ((220, 0, 0, 20), (220, 0, 0), (170, 0, 0)),
+    "high": ((255, 80, 0, 20), (255, 80, 0), (200, 60, 0)),
+    "warning": ((220, 140, 0, 20), (220, 140, 0), (170, 110, 0)),
+    "medium": ((220, 140, 0, 20), (220, 140, 0), (170, 110, 0)),
+    "low": ((0, 120, 210, 20), (0, 120, 210), (0, 90, 170)),
+    "pass": ((0, 140, 60, 15), (0, 140, 60), (0, 120, 50)),
 }
 
 
@@ -105,11 +105,7 @@ def annotate_screenshot(
     violations: list[dict[str, Any]],
     output_path: str | None = None,
 ) -> str:
-    """Render exactly one annotation on a screenshot.
-
-    The first item from `violations` is used; additional items are intentionally ignored.
-    The annotation is always area-based and uses a concrete bbox.
-    """
+    """Render one numbered annotation per violation on a screenshot."""
     img = Image.open(screenshot_path).convert("RGBA")
     overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
     overlay_draw = ImageDraw.Draw(overlay)
@@ -118,37 +114,101 @@ def annotate_screenshot(
     font = _get_font(13)
     font_small = _get_font(11)
 
-    representative = violations[0] if violations else {}
-    checkpoint = representative.get("checkpoint_id", "?")
-    severity = CHECKPOINT_SEVERITY.get(checkpoint, "medium")
-    color = COLORS[severity]
-    rationale = _sanitize_issue_text(representative.get("rationale", "") or "Accessibility issue detected.")
-    fix = FIX_SUGGESTIONS.get(checkpoint, "Manual review required.")[:120]
-    selector = (representative.get("selector") or "").strip()
-    tag = (representative.get("tag") or _parse_tag_from_element(representative.get("element", "")) or "").strip()
-    target = _target_descriptor(selector, tag)
+    # Track valid (non-fallback) bbox y-coordinates for focused crop
+    valid_ys: list[int] = []
+    valid_y2s: list[int] = []
 
-    bbox = _coerce_bbox(representative.get("bbox") or {}, img.width, img.height)
-    x = int(bbox.get("x", 0))
-    y = int(bbox.get("y", 0))
-    w = int(bbox.get("width", 0))
-    h = int(bbox.get("height", 0))
+    for issue_num, violation in enumerate(violations, start=1):
+        checkpoint = violation.get("checkpoint_id", "?")
+        severity = CHECKPOINT_SEVERITY.get(checkpoint, "medium")
+        color = COLORS[severity]
+        rationale = _sanitize_issue_text(violation.get("rationale", "") or "Accessibility issue detected.")
+        fix = FIX_SUGGESTIONS.get(checkpoint, "Manual review required.")[:120]
+        selector = (violation.get("selector") or "").strip()
+        tag = (violation.get("tag") or _parse_tag_from_element(violation.get("element", "")) or "").strip()
+        target = _target_descriptor(selector, tag)
 
-    overlay_draw.rectangle(
-        [x, y, x + w, y + h],
-        fill=(*color, 48),
-        outline=(*color, 200),
-        width=3,
-    )
-    draw.rectangle([x, y, x + w, y + h], outline=color, width=3)
+        raw_bbox = violation.get("bbox") or {}
+        is_fallback = (
+            not _valid_bbox(raw_bbox)
+            or violation.get("map_quality") == "fallback"
+            or violation.get("fallback_tier") == "viewport"
+        )
+        bbox = _coerce_bbox(raw_bbox, img.width, img.height)
+        x = int(bbox.get("x", 0))
+        y = int(bbox.get("y", 0))
+        w = int(bbox.get("width", 0))
+        h = int(bbox.get("height", 0))
 
-    label = f"[SC {checkpoint}] {target} - {rationale}"
-    fix_text = f"FIX: {fix}"
-    _draw_callout(draw, img.width, x, y, w, h, label, fix_text, color, font, font_small)
+        # Track y-range of valid bboxes for focused crop
+        if not is_fallback:
+            valid_ys.append(y)
+            valid_y2s.append(y + h)
+
+        # Draw outline-only box (no filled overlay) so content stays visible
+        overlay_draw.rectangle(
+            [x - 2, y - 2, x + w + 2, y + h + 2],
+            outline=(255, 255, 255, 220),
+            width=2,
+        )
+        overlay_draw.rectangle(
+            [x, y, x + w, y + h],
+            fill=None,
+            outline=(*color, 255),
+            width=5,
+        )
+        draw.rectangle([x - 2, y - 2, x + w + 2, y + h + 2], outline=(255, 255, 255), width=2)
+        draw.rectangle([x, y, x + w, y + h], outline=color, width=5)
+
+        label = f"[{issue_num}][SC {checkpoint}] {target} - {rationale}"
+        fix_text = f"FIX: {fix}"
+        _draw_callout(draw, img.width, x, y, w, h, label, fix_text, color, font, font_small, issue_num)
 
     annotated = Image.alpha_composite(img, overlay).convert("RGB")
+
+    # If the page is very tall, crop to a focused 2000-2500px region around annotations
+    if annotated.height > 3000 and valid_ys:
+        min_y = min(valid_ys)
+        max_y = max(valid_y2s)
+        mid_y = (min_y + max_y) // 2
+        pad = 150
+        crop_half = 1100  # half of ~2200px window
+        crop_top = max(0, mid_y - crop_half)
+        crop_bot = min(annotated.height, mid_y + crop_half)
+        # Ensure padding around actual annotation bounds
+        crop_top = max(0, min(crop_top, min_y - pad))
+        crop_bot = min(annotated.height, max(crop_bot, max_y + pad))
+        # Cap total height at 2500px
+        if crop_bot - crop_top > 2500:
+            crop_bot = crop_top + 2500
+        annotated = annotated.crop((0, crop_top, annotated.width, crop_bot))
+
     out = output_path or screenshot_path.replace(".png", "-annotated.png")
     annotated.save(out, "PNG")
+    return out
+
+
+def crop_issue_region(
+    screenshot_path: str,
+    bbox: dict,
+    padding: int = 200,
+    output_path: str | None = None,
+) -> str:
+    """Crop a screenshot to a region around a specific bounding box."""
+    img = Image.open(screenshot_path)
+    x = max(0, bbox.get("x", 0) - padding)
+    y = max(0, bbox.get("y", 0) - padding)
+    x2 = min(img.width, bbox.get("x", 0) + bbox.get("width", 0) + padding)
+    y2 = min(img.height, bbox.get("y", 0) + bbox.get("height", 0) + padding)
+    if x2 - x < 100:
+        x = max(0, x - 200)
+        x2 = min(img.width, x2 + 200)
+    if y2 - y < 100:
+        y = max(0, y - 200)
+        y2 = min(img.height, y2 + 200)
+    cropped = img.crop((x, y, x2, y2))
+    out = output_path or screenshot_path.replace(".png", f"-crop-{bbox.get('x',0)}-{bbox.get('y',0)}.png")
+    cropped.save(out, "PNG")
     return out
 
 
@@ -157,8 +217,13 @@ def annotate_issue_collection(
     issues: list[dict[str, Any]],
     annotated_path: str,
     crop_dir: str,
+    checklist_slug: str = "",
 ) -> dict[str, list[tuple[str, str]]]:
-    """Render Android-style issue overlays for a whole screen and per issue."""
+    """Render Android-style issue overlays for a whole screen and per issue.
+
+    checklist_slug — e.g. "01_non_text_content" — is prepended to crop/annotated
+    filenames so they are globally unique across checklists.
+    """
     img = Image.open(screenshot_path).convert("RGBA")
     overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
@@ -170,6 +235,7 @@ def annotate_issue_collection(
     issue_crops: list[tuple[str, str]] = []
     issue_annotated: list[tuple[str, str]] = []
     screen_tag = _derive_screen_tag(annotated_path)
+    prefix = f"{checklist_slug}_" if checklist_slug else ""
 
     for issue in issues:
         issue_id = str(issue.get("id") or "").strip()
@@ -186,18 +252,55 @@ def annotate_issue_collection(
             _draw_issue_box_with_label(draw, issue, x1, y1, x2, y2, font)
             _draw_issue_box_with_label(issue_draw, issue, x1, y1, x2, y2, font)
 
-            crop_margin = 8
-            cx1 = max(0, x1 - crop_margin)
-            cy1 = max(0, y1 - crop_margin)
-            cx2 = min(img.size[0], x2 + crop_margin)
-            cy2 = min(img.size[1], y2 + crop_margin)
-            crop_path = crop_root / f"{issue_id}_crop.png"
-            img.crop((cx1, cy1, cx2, cy2)).convert("RGB").save(crop_path, quality=95)
+            # Calculate label dimensions to include in crop
+            lines = _issue_label_lines(issue, font)
+            line_heights = [_text_size(font, line)[1] for line in lines]
+            line_height = max(line_heights) if line_heights else 24
+            label_h = max(32, line_height * len(lines) + 12)
+            label_w = max(max(_text_size(font, line)[0] for line in lines) + 20, 220)
+            label_top = max(0, y1 - label_h)
+
+            # Crop must include: label (above element) + element + generous padding
+            crop_pad = 60
+            cx1 = max(0, x1 - crop_pad)
+            cy1 = max(0, label_top - crop_pad)
+            # Ensure right edge covers the full label width + padding
+            cx2 = min(img.size[0], max(x2, x1 + label_w) + crop_pad + 30)
+            cy2 = min(img.size[1], y2 + crop_pad + 120)
+
+            # Enforce minimum crop size for good context
+            min_w, min_h = 1000, 600
+            cw, ch = cx2 - cx1, cy2 - cy1
+            if cw < min_w:
+                expand = (min_w - cw) // 2
+                cx1 = max(0, cx1 - expand)
+                cx2 = min(img.size[0], cx2 + expand)
+                # If one side hit the image boundary, compensate on the other
+                shortfall = min_w - (cx2 - cx1)
+                if shortfall > 0:
+                    cx1 = max(0, cx1 - shortfall)
+                    shortfall = min_w - (cx2 - cx1)
+                    if shortfall > 0:
+                        cx2 = min(img.size[0], cx2 + shortfall)
+            if ch < min_h:
+                expand = (min_h - ch) // 2
+                cy1 = max(0, cy1 - expand)
+                cy2 = min(img.size[1], cy2 + expand)
+                shortfall = min_h - (cy2 - cy1)
+                if shortfall > 0:
+                    cy1 = max(0, cy1 - shortfall)
+                    shortfall = min_h - (cy2 - cy1)
+                    if shortfall > 0:
+                        cy2 = min(img.size[1], cy2 + shortfall)
+
+            crop_path = crop_root / f"{prefix}{screen_tag}_{issue_id}_crop.png"
+            annotated_crop = Image.alpha_composite(img, issue_overlay)
+            annotated_crop.crop((cx1, cy1, cx2, cy2)).convert("RGB").save(crop_path, quality=95)
             issue_crops.append((issue_id, str(crop_path)))
         else:
             _draw_issue_label_only(issue_draw, issue, img.size, font)
 
-        per_issue_path = Path(annotated_path).parent / f"state_{screen_tag}__{issue_id}_annotated.png"
+        per_issue_path = Path(annotated_path).parent / f"{prefix}state_{screen_tag}__{issue_id}_annotated.png"
         Image.alpha_composite(img, issue_overlay).convert("RGB").save(per_issue_path, quality=95)
         issue_annotated.append((issue_id, str(per_issue_path)))
 
@@ -217,6 +320,7 @@ def _draw_callout(
     color: tuple[int, int, int],
     font,
     font_small,
+    issue_num: int = 1,
 ) -> None:
     label_bbox = draw.textbbox((0, 0), label, font=font)
     label_w = label_bbox[2] - label_bbox[0] + 12
@@ -238,8 +342,9 @@ def _draw_callout(
     draw.text((label_x + 5, label_y + 3), label, fill=(255, 255, 255), font=font)
     draw.text((label_x + 5, label_y + label_h + 1), fix_text, fill=(255, 248, 220), font=font_small)
 
-    draw.ellipse([x - 2, y - 2, x + 24, y + 24], fill=color)
-    draw.text((x + 6, y + 4), "1", fill=(255, 255, 255), font=font)
+    badge_font = _get_font(15)
+    draw.ellipse([x - 4, y - 4, x + 28, y + 28], fill=color)
+    draw.text((x + 5, y + 4), str(issue_num), fill=(255, 255, 255), font=badge_font)
 
 
 def _draw_issue_box_with_label(
@@ -252,14 +357,15 @@ def _draw_issue_box_with_label(
     font,
 ) -> None:
     severity = str(issue.get("severity") or "warning").lower()
-    fill, outline, label_bg = ISSUE_SEVERITY_COLORS.get(severity, ISSUE_SEVERITY_COLORS["warning"])
-    draw.rectangle([x1, y1, x2, y2], fill=fill, outline=outline + (255,), width=4)
+    _fill, outline, label_bg = ISSUE_SEVERITY_COLORS.get(severity, ISSUE_SEVERITY_COLORS["warning"])
+    # Draw outline-only border (no filled overlay) so the element stays visible
+    draw.rectangle([x1, y1, x2, y2], fill=None, outline=outline + (255,), width=4)
 
     lines = _issue_label_lines(issue, font)
     line_heights = [_text_size(font, line)[1] for line in lines]
     line_height = max(line_heights) if line_heights else 24
     label_h = max(32, line_height * len(lines) + 12)
-    label_w = max(max(_text_size(font, line)[0] for line in lines) + 16, 220)
+    label_w = max(max(_text_size(font, line)[0] for line in lines) + 20, 220)
     label_y = max(0, y1 - label_h)
     draw.rectangle([x1, label_y, x1 + label_w, label_y + label_h], fill=label_bg + (220,))
     for idx, line in enumerate(lines):
@@ -294,7 +400,7 @@ def _issue_label_lines(issue: dict[str, Any], font) -> list[str]:
     xml_label = f"L{xml_line}" if xml_line else "L?"
     base = f"{issue.get('id', 'ISSUE-???')} {issue.get('issue_type', 'issue')} {xml_label}"
     detail = _sanitize_issue_text(issue.get("detail", "") or issue.get("rationale", "") or "Accessibility issue detected.")
-    wrapped = textwrap.wrap(f"{base} | {detail}", width=58)[:3]
+    wrapped = textwrap.wrap(f"{base} | {detail}", width=48)[:3]
     return wrapped or [base]
 
 
@@ -413,7 +519,8 @@ def find_annotation_candidate_for_checkpoint(
                 const isVisible = (el) => {
                     if (!el) return false;
                     const r = el.getBoundingClientRect();
-                    return r.width > 5 && r.height > 5 && r.bottom >= 0 && r.top <= window.innerHeight;
+                    // Accept any rendered element on the full page, not just what's in the viewport
+                    return r.width > 5 && r.height > 5;
                 };
                 const selectorFor = (el) => {
                     if (!el) return '';
@@ -456,6 +563,7 @@ def find_annotation_candidate_for_checkpoint(
                 const pack = (el, note) => {
                     const r = el.getBoundingClientRect();
                     const tag = el.tagName.toLowerCase();
+                    // Add window.scrollY so coordinates align with full-page screenshots
                     return {
                         checkpoint_id: checkpointId,
                         rationale: rationale || note || 'WCAG finding',
@@ -464,7 +572,7 @@ def find_annotation_candidate_for_checkpoint(
                         tag,
                         bbox: {
                             x: Math.max(0, Math.round(r.x)),
-                            y: Math.max(0, Math.round(r.y)),
+                            y: Math.max(0, Math.round(r.y + window.scrollY)),
                             width: Math.max(1, Math.round(r.width)),
                             height: Math.max(1, Math.round(r.height)),
                         },
@@ -621,7 +729,8 @@ def _find_fallback_annotation_candidate(page, checkpoint_id: str, rationale: str
                 const isVisible = (el) => {
                     if (!el) return false;
                     const r = el.getBoundingClientRect();
-                    return r.width > 5 && r.height > 5 && r.bottom >= 0 && r.top <= window.innerHeight;
+                    // Accept any rendered element on the full page, not just what's in the viewport
+                    return r.width > 5 && r.height > 5;
                 };
                 const selectorFor = (el) => {
                     if (!el) return '';
@@ -645,6 +754,7 @@ def _find_fallback_annotation_candidate(page, checkpoint_id: str, rationale: str
                 const pack = (el, note, tier) => {
                     const r = el.getBoundingClientRect();
                     const tag = el.tagName.toLowerCase();
+                    // Add window.scrollY so coordinates align with full-page screenshots
                     return {
                         checkpoint_id: checkpointId,
                         rationale: rationale || note || 'Accessibility issue detected.',
@@ -654,7 +764,7 @@ def _find_fallback_annotation_candidate(page, checkpoint_id: str, rationale: str
                         fallback_tier: tier,
                         bbox: {
                             x: Math.max(0, Math.round(r.x)),
-                            y: Math.max(0, Math.round(r.y)),
+                            y: Math.max(0, Math.round(r.y + window.scrollY)),
                             width: Math.max(1, Math.round(r.width)),
                             height: Math.max(1, Math.round(r.height)),
                         },

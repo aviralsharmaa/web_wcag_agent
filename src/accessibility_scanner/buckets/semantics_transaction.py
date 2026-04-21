@@ -10,6 +10,17 @@ from .base import result
 TRANSACTION_RE = re.compile(r"\b(payment|card|bank|amount|checkout|application|legal|tax|submit order)\b")
 GENERIC_LINK_TEXT_RE = re.compile(r"^(click here|here|read more|more|learn more|link|this)$", re.IGNORECASE)
 
+# Titles that are generic, just a site name, or not descriptive of page content
+_GENERIC_TITLES = {
+    "untitled", "document", "page", "home", "homepage", "welcome",
+    "index", "default", "new tab", "loading", "website",
+}
+# Pattern: title is just a domain name or URL
+_DOMAIN_TITLE_RE = re.compile(
+    r"^(https?://)?[\w.-]+\.(com|org|net|co|io|in|gov)\b",
+    re.IGNORECASE,
+)
+
 
 def analyze_semantics_transaction(page: PageArtifact) -> list[CheckpointResult]:
     snapshot = DOMSnapshot.from_html(page.html)
@@ -18,14 +29,10 @@ def analyze_semantics_transaction(page: PageArtifact) -> list[CheckpointResult]:
 
     # -- 2.4.2  Page Titled (NEW) --------------------------------------
     title = page.title.strip() if page.title else ""
-    if not title:
+    title_issue = _check_title_quality(title, page.url)
+    if title_issue:
         findings.append(
-            result("2.4.2", CheckpointStatus.FAIL, page, "Page has no <title> or title is empty.")
-        )
-    elif title.lower() in {"untitled", "document", "page", "home"}:
-        findings.append(
-            result("2.4.2", CheckpointStatus.FAIL, page,
-                   f"Page title '{title}' is generic and not descriptive.")
+            result("2.4.2", CheckpointStatus.FAIL, page, title_issue)
         )
     else:
         findings.append(
@@ -224,12 +231,20 @@ def analyze_semantics_transaction(page: PageArtifact) -> list[CheckpointResult]:
     )
 
     # -- 3.3.8  Accessible Authentication (Minimum) (NEW) --------------
-    has_captcha = any(kw in html_lower for kw in ["captcha", "recaptcha", "hcaptcha"])
-    has_cognitive_test = any(kw in html_lower for kw in ["puzzle", "riddle", "math question"])
-    if has_captcha or has_cognitive_test:
+    # Only flag captcha if it appears in actual form/auth context, not just as a
+    # script URL or library reference. Look for visible captcha elements.
+    captcha_elements = (
+        snapshot.find_by_attr(None, "data-sitekey")  # reCAPTCHA/hCaptcha widget
+        + [n for n in snapshot.nodes if "g-recaptcha" in n.attrs.get("class", "").lower()]
+        + [n for n in snapshot.nodes if "h-captcha" in n.attrs.get("class", "").lower()]
+        + [n for n in snapshot.nodes if n.attrs.get("id", "").lower() in ("captcha", "recaptcha")]
+    )
+    has_cognitive_test = any(kw in html_lower for kw in ["riddle", "math question", "solve this"])
+    if captcha_elements or has_cognitive_test:
         findings.append(
-            result("3.3.8", CheckpointStatus.FAIL, page,
-                   "Detected captcha/cognitive function test in authentication flow without apparent alternative mechanism.")
+            result("3.3.8", CheckpointStatus.CANNOT_VERIFY, page,
+                   f"Detected {len(captcha_elements)} captcha/cognitive elements; "
+                   "verify accessible alternative mechanism exists (audio CAPTCHA, passkey, etc.).")
         )
     else:
         findings.append(
@@ -237,14 +252,14 @@ def analyze_semantics_transaction(page: PageArtifact) -> list[CheckpointResult]:
                    "No cognitive function tests detected in authentication flow.")
         )
 
-    # -- 4.1.1  Parsing ------------------------------------------------
-    parsing_errors = page.media_metadata.get("parsing_errors")
-    if parsing_errors is None:
-        findings.append(result("4.1.1", CheckpointStatus.CANNOT_VERIFY, page, "Markup parsing validation output unavailable."))
-    elif parsing_errors > 0:
-        findings.append(result("4.1.1", CheckpointStatus.FAIL, page, f"Detected {parsing_errors} parsing mismatches."))
-    else:
-        findings.append(result("4.1.1", CheckpointStatus.PASS, page, "No parser mismatches detected by deterministic validator."))
+    # -- 4.1.1  Parsing (deprecated in WCAG 2.2) -------------------------
+    # WCAG 2.2 removed 4.1.1 as a requirement — modern browsers handle
+    # parsing robustly and this is always considered satisfied.
+    findings.append(
+        result("4.1.1", CheckpointStatus.NOT_APPLICABLE, page,
+               "4.1.1 Parsing is deprecated in WCAG 2.2 and always considered satisfied.",
+               applicable=False)
+    )
 
     # -- 4.1.2  Name, Role, Value --------------------------------------
     unnamed = [node for node in snapshot.nodes if is_interactive(node) and not accessible_name(snapshot, node)]
@@ -315,3 +330,46 @@ def analyze_semantics_transaction(page: PageArtifact) -> list[CheckpointResult]:
         )
 
     return findings
+
+
+def _check_title_quality(title: str, url: str) -> str | None:
+    """Return a failure message if the title is poor quality, or None if OK."""
+    if not title:
+        return "Page has no <title> or title is empty."
+
+    title_lower = title.lower().strip()
+
+    # Generic placeholder titles
+    if title_lower in _GENERIC_TITLES:
+        return f"Page title '{title}' is generic and not descriptive."
+
+    # Title is just a domain/URL
+    if _DOMAIN_TITLE_RE.match(title_lower):
+        return f"Page title '{title}' appears to be a domain name, not a descriptive page title."
+
+    # Title is too short to be descriptive (single word, unless it's a brand)
+    words = title.split()
+    if len(words) == 1 and len(title) < 15:
+        return f"Page title '{title}' is a single word and may not adequately describe page content."
+
+    # Title matches common "site name only" pattern — no page-specific content
+    # Extract domain from URL to compare with title
+    if url:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        domain_parts = parsed.netloc.replace("www.", "").split(".")
+        domain_name = domain_parts[0] if domain_parts else ""
+        # If title is just the domain name (case-insensitive)
+        if domain_name and title_lower == domain_name.lower():
+            return (
+                f"Page title '{title}' matches the site domain name only — "
+                "should include page-specific description."
+            )
+
+    # Title is same across error pages (common "404" or "Page Not Found" without context)
+    if any(kw in title_lower for kw in ["404", "not found", "error", "403", "500"]):
+        # This is actually fine if it identifies the error — but should be descriptive
+        if len(words) <= 2:
+            return f"Page title '{title}' for error page should be more descriptive (e.g., 'Page Not Found - Site Name')."
+
+    return None

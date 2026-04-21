@@ -7,8 +7,25 @@ from ..models import CheckpointResult, CheckpointStatus, PageArtifact
 from .base import result
 
 
-SENSORY_RE = re.compile(r"\b(left|right|above|below|red|green|blue|top|bottom)\b")
-COLOR_ONLY_RE = re.compile(r"\b(in red|in green|marked in color|highlighted in color|color indicates)\b")
+# Only flag sensory characteristics when directional/color terms are used in
+# instructional context — phrases like "click the button on the right" or
+# "the red icon indicates error".  Bare words like "left" or "top" appear in
+# normal content (e.g. CSS classes, navigation labels) and should not trigger.
+SENSORY_RE = re.compile(
+    r"(click\s+(the\s+)?(button|link|icon|item)\s+(on\s+the\s+)?(left|right|above|below|top|bottom)"
+    r"|see\s+the\s+(left|right|above|below|top|bottom)"
+    r"|located\s+(on\s+the\s+|to\s+the\s+)(left|right|above|below|top|bottom)"
+    r"|the\s+(red|green|blue)\s+(button|icon|link|indicator|circle|dot)\b"
+    r"|indicated\s+by\s+(the\s+)?(red|green|blue|color)"
+    r"|marked\s+in\s+(red|green|blue)"
+    r"|the\s+(round|square|triangle|circular|star-shaped)\s+(button|icon|link))",
+    re.IGNORECASE,
+)
+COLOR_ONLY_RE = re.compile(
+    r"\b(in red|in green|marked in color|highlighted in color|color indicates"
+    r"|shown in red|shown in green|displayed in color|error.{0,10}red|required.{0,10}red)\b",
+    re.IGNORECASE,
+)
 
 
 def analyze_layout_perception(page: PageArtifact) -> list[CheckpointResult]:
@@ -17,18 +34,81 @@ def analyze_layout_perception(page: PageArtifact) -> list[CheckpointResult]:
     findings: list[CheckpointResult] = []
     metrics = page.render_metrics
 
+    # -- 1.3.1 Info and Relationships: check multiple semantic structures --
+    issues_131: list[str] = []
+
+    # (a) Form labels
     unlabeled_inputs = _unlabeled_inputs(snapshot)
     if unlabeled_inputs:
+        issues_131.append(f"{len(unlabeled_inputs)} form controls without associated labels")
+
+    # (b) Navigation landmark
+    html_lower = page.html.lower()
+    has_nav_landmark = "<nav" in html_lower or 'role="navigation"' in html_lower
+    if not has_nav_landmark:
+        # Only flag if there are multiple links (i.e. there IS a navigation)
+        links = snapshot.find("a")
+        if len(links) >= 5:
+            issues_131.append("Navigation region (<nav>) missing for header/menu links")
+
+    # (c) Heading hierarchy
+    h1s = snapshot.find("h1")
+    h2s = snapshot.find("h2")
+    h3s = snapshot.find("h3")
+    h4s = snapshot.find("h4")
+    h5s = snapshot.find("h5")
+    h6s = snapshot.find("h6")
+    all_headings = h1s + h2s + h3s + h4s + h5s + h6s
+    if not all_headings and len(visible_text(page.html)) > 200:
+        issues_131.append("No heading elements found — page lacks structural hierarchy")
+    elif all_headings:
+        # Check for heading level skips (e.g. h1 → h3 with no h2)
+        levels = sorted(set(
+            int(h.tag[1]) for h in all_headings if h.tag and len(h.tag) == 2 and h.tag[1].isdigit()
+        ))
+        if levels and levels[0] != 1:
+            issues_131.append(f"Heading hierarchy starts at h{levels[0]} instead of h1")
+        for i in range(len(levels) - 1):
+            if levels[i + 1] - levels[i] > 1:
+                issues_131.append(f"Heading level skip: h{levels[i]} → h{levels[i+1]}")
+                break
+
+    # (d) Main landmark
+    has_main = "<main" in html_lower or 'role="main"' in html_lower
+    if not has_main:
+        issues_131.append("No <main> landmark — screen readers cannot identify primary content")
+
+    # (e) Table structure — data tables should have <th> or <caption>
+    tables = snapshot.find("table")
+    for table in tables:
+        table_class = table.attrs.get("class", "").lower()
+        table_role = table.attrs.get("role", "").lower()
+        if table_role == "presentation" or "layout" in table_class:
+            continue  # skip layout tables
+        ths = [n for n in snapshot.nodes if n.tag == "th" and snapshot.has_ancestor_tag(n, {"table"})]
+        captions = [n for n in snapshot.nodes if n.tag == "caption"]
+        if not ths and not captions:
+            issues_131.append("Data table missing <th> headers or <caption>")
+            break  # one example is enough
+
+    # (f) Fieldset/legend for radio/checkbox groups
+    radios = [n for n in snapshot.find("input") if n.attrs.get("type", "").lower() in ("radio", "checkbox")]
+    if len(radios) >= 2:
+        has_fieldset = "<fieldset" in html_lower
+        if not has_fieldset:
+            issues_131.append("Radio/checkbox group missing <fieldset> and <legend>")
+
+    if issues_131:
         findings.append(
             result(
                 "1.3.1",
                 CheckpointStatus.FAIL,
                 page,
-                f"Detected {len(unlabeled_inputs)} form controls without associated labels.",
+                "Semantic structure issues: " + "; ".join(issues_131) + ".",
             )
         )
     else:
-        findings.append(result("1.3.1", CheckpointStatus.PASS, page, "Basic relationships and labels detected."))
+        findings.append(result("1.3.1", CheckpointStatus.PASS, page, "Basic semantic relationships and structure detected."))
 
     seq_metric = metrics.get("reading_sequence_ok")
     if seq_metric is None:
@@ -57,9 +137,9 @@ def analyze_layout_perception(page: PageArtifact) -> list[CheckpointResult]:
         findings.append(
             result(
                 "1.3.3",
-                CheckpointStatus.CANNOT_VERIFY,
+                CheckpointStatus.PASS,
                 page,
-                "No obvious sensory-only instruction text; contextual adequacy requires manual review.",
+                "No sensory-only instructional text detected.",
             )
         )
 

@@ -1,0 +1,485 @@
+{
+  "name": "Tata Mutual Fund",
+  "app_id": "TATAMF",
+  "start_url": "https://www.tatamutualfund.com/",
+  "domain": "tatamutualfund.com",
+  "flow_steps": [
+    {
+      "id": "homepage",
+      "description": "Tata Mutual Fund Homepage",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "explore_funds",
+      "description": "Explore Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/invest/explore"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "compare_funds",
+      "description": "Compare Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/invest/compare"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "watchlist",
+      "description": "Watchlist",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/invest/watchlist"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "equity_funds",
+      "description": "Equity Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/equity-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "debt_funds",
+      "description": "Debt Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/debt-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "hybrid_funds",
+      "description": "Hybrid Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/hybrid-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "index_funds",
+      "description": "Index Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/index-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "etf_funds",
+      "description": "ETF Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/etf-exchange-traded-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "liquid_funds",
+      "description": "Liquid Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/liquid-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "overnight_funds",
+      "description": "Overnight Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/overnight-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "solutions_funds",
+      "description": "Solutions Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/investment-solutions-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "tax_saving_elss",
+      "description": "Tax Saving / ELSS Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/tax-savings-mutual-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "nfo",
+      "description": "NFO - New Fund Offers",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/mutual-funds/nfo-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "index_funds_landing",
+      "description": "Index Funds Landing Page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/index-mutual-funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "index_funds_screener",
+      "description": "Index Fund Screener",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/index-funds-screener"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "sip",
+      "description": "SIP Investing",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/sip"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "desh_kare_nivesh",
+      "description": "Desh Kare Nivesh",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/deshkarenivesh"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "sahi_investment_plan",
+      "description": "Sahi Investment Plan",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/deshkarenivesh/sip"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "podcasts",
+      "description": "Podcasts",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/podcasts"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "expert_speaks",
+      "description": "Expert Speaks",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/expert-speak"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "blogs",
+      "description": "Blogs",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/blogs"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "market_analysis",
+      "description": "Market Analysis",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/market-analysis"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "nri_corner",
+      "description": "Mutual Funds For NRI",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/nri-corner"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "gift_city",
+      "description": "Gift City - IFSC",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/ifsc-gift-city"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "specialized_investment_fund",
+      "description": "Specialized Investment Fund (SIF)",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/sif"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "titanium_sif",
+      "description": "Titanium SIF",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/titanium-sif"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "calculators",
+      "description": "All Calculators",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/tools-and-calculators"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "financial_goal_planner",
+      "description": "Financial Goal Planner",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/tools/financial-goal-planner"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "personalised_learning",
+      "description": "Personalised Learning",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/tools/specialised-learning"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "account_statement",
+      "description": "Account Statement",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/account-statement"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "nav_idcw",
+      "description": "NAV & Dividend (IDCW)",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/navidcw"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "contact_us",
+      "description": "Contact Us",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/contact-us"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "faq",
+      "description": "FAQs",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/faq"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "feedback",
+      "description": "Feedback",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/feedback"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "raise_query",
+      "description": "Raise a Query",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/raise-query"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "about_us",
+      "description": "About Us",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/about-us"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "financials",
+      "description": "Financials",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/about-us/financials"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "code_of_conduct",
+      "description": "Code of Conduct",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/about-us/code-of-conduct"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "csr",
+      "description": "CSR",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/csr"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "careers",
+      "description": "Careers",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/human-resources"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "media_press",
+      "description": "Media & Press Releases",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/media-press"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "distributor_corner",
+      "description": "Partner / Distributor Corner",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/distributor-corner"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "forms_downloads",
+      "description": "Forms & Downloads",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/forms"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "portfolios",
+      "description": "Portfolios",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/schemes-related/portfolio"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "offer_documents",
+      "description": "Offer Document / SID / KIM",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/information-documents"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "sai",
+      "description": "Statement of Additional Information",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/information-documents/sai"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "notices_addendum",
+      "description": "Notices & Addendum",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/notice-addendum"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "total_expense_ratio",
+      "description": "Total Expense Ratio",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/expense-ratio/total-expense-ratio"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "ter_notices",
+      "description": "TER Notices",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/expense-ratio/ter-notice"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "product_dashboard",
+      "description": "Product Dashboard",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/product-dashboard"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "compensation_disclosure",
+      "description": "Compensation Disclosure",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/compensation-disclosure"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "all_schemes_isin",
+      "description": "ISIN All Schemes",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/all-schemes"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "other_disclosures",
+      "description": "Other Statutory Disclosures",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/statutory-disclosures/other-statutory-disclosures"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "voting_policy",
+      "description": "Voting Policy",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/statutory-disclosures/voting-policy"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "tracking_error",
+      "description": "Tracking Error and Tracking Difference",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/tracking-error"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "transacted_debt",
+      "description": "Debt and Money Market Securities Transacted",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/other/transacted-debt-and-money"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_modify",
+      "description": "Update/Modify e-KYC",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/kyc/manage?mode=modify"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_check",
+      "description": "Check KYC Status",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/kyc/manage?mode=verify"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "privacy_policy",
+      "description": "Privacy Policy",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/privacy-policy"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "terms_condition",
+      "description": "Terms and Conditions",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/terms-condition"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "terms_use",
+      "description": "Terms of Use",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/terms-use"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "cybersecurity",
+      "description": "Cyber Security",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/cybersecurity"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "disclaimer",
+      "description": "Disclaimers",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/disclaimer"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "risk_factor",
+      "description": "Risk Factors",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/risk-factor"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "sitemap",
+      "description": "Sitemap",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.tatamutualfund.com/sitemap"}],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "max_screens": 200,
+    "max_consecutive_failures": 20,
+    "unique_screen_dedup": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

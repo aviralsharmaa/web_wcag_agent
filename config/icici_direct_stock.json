@@ -1,0 +1,145 @@
+{
+  "name": "ICICI Direct UAT - Stock New Site",
+  "app_id": "ICICIDSTOCK",
+  "start_url": "https://secureuat.icicidirect.com/customer/login",
+  "domain": "secureuat.icicidirect.com",
+  "flow_steps": [
+    {
+      "id": "login_page_scan",
+      "description": "Scan the login page before logging in",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "login_and_otp",
+      "description": "Login with credentials and enter OTP",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "#txtu",
+          "value": "captainNRI",
+          "description": "Enter User ID"
+        },
+        {
+          "type": "fill",
+          "selector": "#txtp",
+          "value": "test1234",
+          "description": "Enter password"
+        },
+        {
+          "type": "click",
+          "selector": "#btnlogin",
+          "description": "Click Login button"
+        },
+        {
+          "type": "otp",
+          "value": "111111",
+          "description": "Enter OTP digits"
+        }
+      ],
+      "wait_after": 8000
+    },
+    {
+      "id": "navigate_stock_new_site",
+      "description": "Navigate directly to Stock New Site",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://secureuat.icicidirect.com/tradingnew/watchlist/landinghome",
+          "description": "Go directly to Stock New Site landing page"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all pages within the Stock New Site section",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "LLM agent explores every reachable route within the Stock New Site trading section"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 500,
+    "max_screens": 150,
+    "max_consecutive_failures": 20,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 60,
+    "manual_assist_on_stall": false,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true,
+    "exploration_profile": {
+      "persona": "Explore the ICICI Direct Stock New Site trading section thoroughly. This is a post-login trading interface. Cover watchlists, market data, order placement, portfolio, positions, holdings, funds, reports, alerts, settings, and all sub-sections.",
+      "major_sections": [
+        "watchlist",
+        "market",
+        "orders",
+        "portfolio",
+        "positions",
+        "holdings",
+        "funds",
+        "reports",
+        "alerts",
+        "settings",
+        "profile"
+      ],
+      "preferred_tokens": [
+        "watchlist",
+        "market",
+        "order",
+        "portfolio",
+        "position",
+        "holding",
+        "fund",
+        "report",
+        "alert",
+        "setting",
+        "profile",
+        "trade",
+        "stock",
+        "buy",
+        "sell",
+        "IPO",
+        "mutual fund",
+        "SIP",
+        "research"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "play.google.com",
+        "apps.apple.com",
+        "instagram",
+        "facebook",
+        "twitter",
+        "linkedin"
+      ],
+      "journey_rules": [
+        "Stay ONLY within URLs containing /tradingnew/ — do NOT navigate outside this section.",
+        "Do NOT go back to the old ICICI Direct site or any URL without /tradingnew/ in the path.",
+        "Explore all tabs, sub-tabs, dropdowns, and modal dialogs within the Stock New Site trading interface.",
+        "Look for settings, profile, notification panels, and help sections within the trading app.",
+        "Click into individual stock details, order forms, and portfolio views.",
+        "Scroll each page fully to capture all content sections.",
+        "Do NOT click logout or sign out."
+      ]
+    }
+  }
+}

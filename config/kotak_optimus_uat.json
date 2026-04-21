@@ -1,0 +1,62 @@
+{
+  "name": "Kotak Optimus UAT (AIFMetrics)",
+  "app_id": "KOTAKOPTIMUSUAT",
+  "start_url": "https://optimusuat.kotak.com/signin",
+  "domain": "kotak.com",
+  "flow_steps": [
+    {
+      "id": "manual_login",
+      "description": "User completes entire login manually",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "User logs in manually",
+          "instructions": "Complete the entire login manually. The scan will resume after the URL changes away from signin/otp pages.",
+          "completion_url_changed": true,
+          "timeout_ms": 300000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan post-login dashboard",
+      "scan_scope": "post_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all reachable post-login pages and routes",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all pages — dashboard, portfolio, funds, reports, transactions, settings, profile, and any other sections"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

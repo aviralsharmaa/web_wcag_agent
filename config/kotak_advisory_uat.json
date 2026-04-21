@@ -1,0 +1,87 @@
+{
+  "name": "Kotak Advisory UAT WealthSpectrum",
+  "app_id": "KOTAKADVISORYUAT",
+  "start_url": "https://advisoryuat.kial.kotak.com/wealthspectrum/portal/sign-in",
+  "domain": "kotak.com",
+  "flow_steps": [
+    {
+      "id": "login_page",
+      "description": "Scan the sign-in page",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "login_creds",
+      "description": "Enter username and password",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[autocomplete='username'], input[type='text'], input[placeholder*='User' i], input[placeholder*='Email' i], input[name*='user' i], input[name*='email' i], input[id*='user' i], input[id*='email' i], input:not([type='password']):not([type='hidden']):visible",
+          "value": "KIAL291",
+          "description": "Enter Username"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[autocomplete='current-password'], input[placeholder*='Password' i], input[name*='password' i], input[id*='password' i]",
+          "value": "Welcome@123",
+          "description": "Enter Password"
+        }
+      ],
+      "wait_after": 2000
+    },
+    {
+      "id": "captcha_and_login",
+      "description": "Wait for user to solve captcha and click Sign In",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "User solves captcha and clicks Sign In",
+          "instructions": "Enter the captcha in the browser and click Sign In. The scan will resume automatically after the dashboard loads.",
+          "completion_url_changed": true,
+          "timeout_ms": 300000,
+          "poll_interval_ms": 2000,
+          "stable_wait_ms": 3000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan post-login dashboard",
+      "scan_scope": "post_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all reachable post-login pages and routes",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all pages — dashboard, portfolio, clients, reports, settings, profile, and any other sections"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

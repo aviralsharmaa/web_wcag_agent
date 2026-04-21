@@ -1,0 +1,121 @@
+{
+  "name": "Axis Direct Trading",
+  "app_id": "AXISDIRECTTRADE",
+  "start_url": "https://trading.axisdirect.in/",
+  "domain": "trading.axisdirect.in",
+  "flow_steps": [
+    {
+      "id": "landing_scan",
+      "description": "Scan the landing/login page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_login",
+      "description": "User logs in with credentials",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Login with Username: Rohan0593, Password: Axis@2027, OTP: 589834.",
+          "instructions": "Enter username Rohan0593, password Axis@2027, submit, enter OTP 589834. Scanner auto-continues after login.",
+          "completion_url_not_contains": ["/logout"],
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated routes — Dashboard, Watchlist, Orders, Portfolio, Funds, Markets, Research, IPO, Mutual Funds, Reports, Settings, and any other sections."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a retail investor using the Axis Direct trading platform. Explore dashboard, watchlist, order placement screens, portfolio, funds, markets, research, IPO, mutual funds, reports, account settings, and any other available sections.",
+      "major_sections": [
+        "dashboard",
+        "watchlist",
+        "orders",
+        "portfolio",
+        "funds",
+        "markets",
+        "research",
+        "IPO",
+        "mutual funds",
+        "reports",
+        "settings",
+        "profile"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "watchlist",
+        "order",
+        "buy",
+        "sell",
+        "portfolio",
+        "holdings",
+        "positions",
+        "funds",
+        "market",
+        "research",
+        "IPO",
+        "mutual fund",
+        "SIP",
+        "report",
+        "statement",
+        "settings",
+        "profile",
+        "account",
+        "chart",
+        "screener"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal"
+      ],
+      "journey_rules": [
+        "Click each main navigation item one by one.",
+        "Explore all sub-menus, tabs, and expandable sections.",
+        "If you see dropdown menus, hover/click to reveal sub-items.",
+        "Do NOT click logout or sign out.",
+        "Do NOT place any actual orders or transfer any funds — only explore the forms.",
+        "Do NOT click on any buy/sell confirm buttons."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

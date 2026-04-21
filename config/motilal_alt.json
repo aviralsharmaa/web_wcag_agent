@@ -1,0 +1,94 @@
+{
+  "name": "Motilal Oswal Alternates",
+  "app_id": "MOTILALALT",
+  "start_url": "https://www.motilaloswalalt.com/",
+  "domain": "www.motilaloswalalt.com",
+  "flow_steps": [
+    {
+      "id": "landing_scan",
+      "description": "Scan the homepage",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all public pre-login pages",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all public pages of the Motilal Oswal Alternates website — Home, About, Products/Funds, Investors, Media, Contact, and any other sections."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like an investor browsing the Motilal Oswal Alternates website. Explore all informational pages, fund details, investor resources, media, and any other available sections.",
+      "major_sections": [
+        "home",
+        "about",
+        "products",
+        "funds",
+        "investors",
+        "media",
+        "contact",
+        "careers",
+        "disclosures",
+        "policies"
+      ],
+      "preferred_tokens": [
+        "home",
+        "about",
+        "product",
+        "fund",
+        "investor",
+        "media",
+        "contact",
+        "career",
+        "AIF",
+        "PMS",
+        "alternative",
+        "disclosure",
+        "policy",
+        "performance",
+        "report",
+        "team"
+      ],
+      "avoid_tokens": [
+        "login",
+        "sign in",
+        "register",
+        "sign up",
+        "logout",
+        "play store",
+        "app store"
+      ],
+      "journey_rules": [
+        "Click each main navigation item one by one.",
+        "Explore all sub-menus, tabs, dropdowns, and expandable sections.",
+        "Stay within motilaloswalalt.com — do not navigate to external domains.",
+        "Do NOT click login or sign in links.",
+        "Explore footer links as well.",
+        "If there are fund/product pages, click into each one to see details."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

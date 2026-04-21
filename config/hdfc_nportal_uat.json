@@ -1,0 +1,198 @@
+{
+  "name": "HDFC Securities nPortal UAT",
+  "app_id": "HDFCNPORTALUAT",
+  "start_url": "https://nportaluat.hdfcsec.com/",
+  "domain": "hdfcsec.com",
+  "flow_steps": [
+    {
+      "id": "equity_markets",
+      "description": "Equity Markets page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/Equity", "description": "Navigate to Equity Markets" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "mutual_funds",
+      "description": "Mutual Funds Overview page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/mutualfund", "description": "Navigate to Mutual Funds" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "derivatives",
+      "description": "Derivatives Overview page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/market/derivatives", "description": "Navigate to Derivatives" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "currency",
+      "description": "Currency Markets page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/market/currency", "description": "Navigate to Currency" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "ipo_product",
+      "description": "IPO Products page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/offering/ipo-product", "description": "Navigate to IPO Products" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "research_equity",
+      "description": "Equity Research page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/research/equity", "description": "Navigate to Equity Research" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "investment_ideas",
+      "description": "Investment Ideas page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/Research/InvestmentIdeas", "description": "Navigate to Investment Ideas" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "sip_calculator",
+      "description": "SIP Calculator (Personal Finance)",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/personal-finance/sip-calculator", "description": "Navigate to SIP Calculator" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "emi_calculator",
+      "description": "EMI Calculator (Personal Finance)",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/personal-finance/emi-calculator-to-recover-loan-interest", "description": "Navigate to EMI Calculator" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "account_opening",
+      "description": "Account Opening product page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/productpage/account-opening", "description": "Navigate to Account Opening" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "bonds",
+      "description": "Bonds product page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/products/bonds", "description": "Navigate to Bonds" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "fixed_deposits",
+      "description": "Fixed Deposits page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/fixed-deposits", "description": "Navigate to Fixed Deposits" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "global_investing",
+      "description": "Global Investing page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/globalinvesting", "description": "Navigate to Global Investing" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "corporate_nps",
+      "description": "Corporate NPS page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/corporate-nps", "description": "Navigate to Corporate NPS" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "locate_us",
+      "description": "Locate Us page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/home/locateus", "description": "Navigate to Locate Us / Branch Locator" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "brokerage_charges",
+      "description": "Brokerage Charges article page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/article/brokeragecharges-3044", "description": "Navigate to Brokerage Charges" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "privacy_policy",
+      "description": "Privacy Policy page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/article/privacypolicy-1688", "description": "Navigate to Privacy Policy" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "newsroom",
+      "description": "Newsroom Press Releases page",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/NewsRoom/PressRelease/1", "description": "Navigate to Newsroom" }
+      ],
+      "wait_after": 1000
+    },
+    {
+      "id": "explore_remaining",
+      "description": "Explore remaining reachable pages via LLM-guided navigation",
+      "scan_scope": "pre_login",
+      "actions": [
+        { "type": "navigate", "url": "https://nportaluat.hdfcsec.com/Main", "description": "Navigate to main homepage" },
+        { "type": "explore", "description": "Explore any remaining navigation links, sub-pages, calculators, and product pages not yet visited" }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 300,
+    "max_screens": 150,
+    "stagnation_window": 30,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

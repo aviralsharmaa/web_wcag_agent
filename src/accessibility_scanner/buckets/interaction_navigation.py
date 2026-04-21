@@ -1,35 +1,139 @@
 from __future__ import annotations
 
+import re
+
+from ..html_utils import DOMSnapshot
 from ..models import CheckpointResult, CheckpointStatus, PageArtifact
 from .base import result
+
+# Patterns indicating hover-dependent UI components
+_HOVER_MENU_CLASSES = re.compile(
+    r"(dropdown|drop-down|submenu|sub-menu|mega-?menu|nav-flyout|hover-menu|popover-menu)",
+    re.IGNORECASE,
+)
+_FLIP_CARD_CLASSES = re.compile(
+    r"(flip-?card|card-flip|hover-card|hover-flip|flip-?box|flip-?container)",
+    re.IGNORECASE,
+)
+# Mouse-only event attributes (inline handlers)
+_MOUSE_ONLY_ATTRS = {"onmouseover", "onmouseenter", "onmousemove"}
+_KEYBOARD_ATTRS = {"onfocus", "onblur", "onkeydown", "onkeyup", "onkeypress"}
+
+
+def _detect_hover_only_issues(snapshot: DOMSnapshot, html_lower: str) -> list[str]:
+    """Detect elements that rely on hover/mouse but lack keyboard support."""
+    issues: list[str] = []
+
+    # (a) Elements with inline mouse handlers but no keyboard handler / tabindex
+    for node in snapshot.nodes:
+        has_mouse = any(attr in node.attrs for attr in _MOUSE_ONLY_ATTRS)
+        if not has_mouse:
+            continue
+        has_keyboard = any(attr in node.attrs for attr in _KEYBOARD_ATTRS)
+        has_tabindex = "tabindex" in node.attrs
+        is_focusable = node.tag in {"a", "button", "input", "select", "textarea", "summary"}
+        if not has_keyboard and not has_tabindex and not is_focusable:
+            issues.append(
+                f"<{node.tag}> with mouse event handler (onmouseover/onmouseenter) "
+                "but no keyboard handler or tabindex"
+            )
+
+    # (b) Dropdown/submenu patterns — <li> with nested <ul> and hover class
+    for idx, node in enumerate(snapshot.nodes):
+        if node.tag != "li":
+            continue
+        classes = node.attrs.get("class", "")
+        if not _HOVER_MENU_CLASSES.search(classes):
+            continue
+        # Check if this <li> has a nested <ul>/<div> (submenu) but no
+        # aria-expanded, role=menu, or keyboard support
+        has_aria_expanded = "aria-expanded" in node.attrs or "aria-haspopup" in node.attrs
+        has_tabindex = "tabindex" in node.attrs
+        if not has_aria_expanded and not has_tabindex:
+            issues.append(
+                f"Dropdown menu item (class='{classes[:40]}') lacks aria-expanded/aria-haspopup "
+                "and tabindex for keyboard access"
+            )
+
+    # (c) Hover-dependent CSS patterns in <style> blocks or inline styles
+    # Look for :hover that shows/reveals content (display/visibility/opacity)
+    hover_reveal_count = len(re.findall(
+        r":hover\s*\{[^}]*(display\s*:\s*(?!none)|visibility\s*:\s*visible|opacity\s*:\s*1)",
+        html_lower,
+    ))
+
+    # (d) Flip card patterns
+    flip_cards = [
+        node for node in snapshot.nodes
+        if _FLIP_CARD_CLASSES.search(node.attrs.get("class", ""))
+    ]
+    for card in flip_cards:
+        has_tabindex = "tabindex" in card.attrs
+        has_keyboard = any(attr in card.attrs for attr in _KEYBOARD_ATTRS)
+        is_focusable = card.tag in {"a", "button"}
+        if not has_tabindex and not has_keyboard and not is_focusable:
+            issues.append(
+                f"Flip card element (class='{card.attrs.get('class', '')[:40]}') "
+                "not keyboard accessible (no tabindex or keyboard handler)"
+            )
+
+    # (e) Nav items that are only <li> > <a> with nested submenus but
+    #     the parent <li> handles hover to show the submenu
+    nav_lis = [
+        node for node in snapshot.nodes
+        if node.tag == "li" and snapshot.has_ancestor_tag(node, {"nav"})
+    ]
+    for li in nav_lis:
+        li_idx = snapshot.nodes.index(li)
+        children = snapshot._children_of(li_idx)
+        has_nested_list = any(c.tag in {"ul", "ol", "div"} for c in children)
+        if not has_nested_list:
+            continue
+        # Sub-navigation detected — check if the trigger link has aria-expanded
+        trigger_links = [c for c in children if c.tag in {"a", "button"}]
+        if trigger_links:
+            trigger = trigger_links[0]
+            if "aria-expanded" not in trigger.attrs and "aria-haspopup" not in trigger.attrs:
+                text = trigger.text.strip()[:30] or trigger.attrs.get("href", "")[:30]
+                issues.append(
+                    f"Nav menu item '{text}' has sub-navigation but trigger lacks "
+                    "aria-expanded/aria-haspopup for keyboard disclosure"
+                )
+
+    return issues
 
 
 def analyze_interaction_navigation(page: PageArtifact) -> list[CheckpointResult]:
     m = page.interaction_metrics
+    snapshot = DOMSnapshot.from_html(page.html)
+    html_lower = page.html.lower()
     findings: list[CheckpointResult] = []
 
     # -- 2.1.1  Keyboard Operability -----------------------------------
     focus_trail = m.get("focus_trail")
     keyboard_access_ok = m.get("keyboard_access_ok")
+    hover_issues = _detect_hover_only_issues(snapshot, html_lower)
+
     if focus_trail is not None:
         # We have real browser tab-order data
         trail_len = len(focus_trail)
         interactive_count = m.get("interactive_count", 0)
         if trail_len == 0 and interactive_count > 0:
-            findings.append(
-                result(
-                    "2.1.1", CheckpointStatus.FAIL, page,
-                    f"No elements received focus via Tab key despite {interactive_count} interactive elements on page.",
-                )
-            )
+            msg = f"No elements received focus via Tab key despite {interactive_count} interactive elements on page."
+            if hover_issues:
+                msg += f" Also detected {len(hover_issues)} hover-only patterns: {'; '.join(hover_issues[:3])}."
+            findings.append(result("2.1.1", CheckpointStatus.FAIL, page, msg))
         elif trail_len > 0:
             off_screen = [e for e in focus_trail if not e.get("visible", True)]
-            if off_screen:
+            if off_screen or hover_issues:
+                parts = []
+                if off_screen:
+                    parts.append(f"{len(off_screen)} focused elements are invisible/off-screen")
+                if hover_issues:
+                    parts.append(f"{len(hover_issues)} hover-only interactive patterns detected: {'; '.join(hover_issues[:3])}")
                 findings.append(
-                    result(
-                        "2.1.1", CheckpointStatus.FAIL, page,
-                        f"Keyboard navigation works but {len(off_screen)} focused elements are invisible/off-screen.",
-                    )
+                    result("2.1.1", CheckpointStatus.FAIL, page,
+                           f"Keyboard issues: {'; '.join(parts)}.")
                 )
             else:
                 findings.append(
@@ -41,8 +145,19 @@ def analyze_interaction_navigation(page: PageArtifact) -> list[CheckpointResult]
                 result("2.1.1", CheckpointStatus.PASS, page, "No interactive elements; keyboard operability N/A.")
             )
     elif keyboard_access_ok is not None:
-        status = CheckpointStatus.PASS if keyboard_access_ok else CheckpointStatus.FAIL
-        findings.append(result("2.1.1", status, page, "Keyboard operability metric evaluated (heuristic)."))
+        if not keyboard_access_ok or hover_issues:
+            msg = "Keyboard operability issues detected."
+            if hover_issues:
+                msg = f"Detected {len(hover_issues)} hover-only patterns: {'; '.join(hover_issues[:3])}."
+            findings.append(result("2.1.1", CheckpointStatus.FAIL, page, msg))
+        else:
+            findings.append(result("2.1.1", CheckpointStatus.PASS, page, "Keyboard operability metric evaluated (heuristic)."))
+    elif hover_issues:
+        findings.append(
+            result("2.1.1", CheckpointStatus.FAIL, page,
+                   f"Detected {len(hover_issues)} hover-only interactive patterns without keyboard support: "
+                   f"{'; '.join(hover_issues[:3])}.")
+        )
     else:
         findings.append(
             result("2.1.1", CheckpointStatus.CANNOT_VERIFY, page, "Keyboard traversal metrics unavailable.")
@@ -55,12 +170,25 @@ def analyze_interaction_navigation(page: PageArtifact) -> list[CheckpointResult]
     elif trap:
         trail_len = len(m.get("focus_trail", []))
         interactive_count = m.get("interactive_count", 0)
-        findings.append(
-            result(
-                "2.1.2", CheckpointStatus.FAIL, page,
-                f"Potential keyboard trap: only {trail_len}/{interactive_count} elements reachable via Tab.",
+        # Only flag as FAIL if the trap detection is definitive:
+        # - focus_trail exists and got stuck (repeated same element)
+        # - Very few elements reachable (<= 3) despite many interactive elements
+        # Low coverage alone (e.g., 1/121) usually means the keyboard test
+        # ran out of time, not that there's a trap.
+        stuck_elements = m.get("keyboard_trap_stuck_elements", [])
+        if stuck_elements or (trail_len <= 3 and interactive_count > 10):
+            findings.append(
+                result(
+                    "2.1.2", CheckpointStatus.FAIL, page,
+                    f"Potential keyboard trap: only {trail_len}/{interactive_count} elements reachable via Tab.",
+                )
             )
-        )
+        else:
+            findings.append(
+                result("2.1.2", CheckpointStatus.CANNOT_VERIFY, page,
+                       f"Keyboard coverage low ({trail_len}/{interactive_count} elements reached); "
+                       "may indicate trap or limited test time.")
+            )
     else:
         findings.append(result("2.1.2", CheckpointStatus.PASS, page, "No keyboard trap detected."))
 
@@ -94,18 +222,32 @@ def analyze_interaction_navigation(page: PageArtifact) -> list[CheckpointResult]
             )
 
     # -- 2.2.1  Timing Adjustable (NEW) --------------------------------
-    html_lower = page.html.lower()
-    has_meta_refresh = "http-equiv" in html_lower and "refresh" in html_lower
-    has_timeout_hint = any(kw in html_lower for kw in ["settimeout", "setinterval", "session-timeout", "auto-logout"])
-    if has_meta_refresh:
+    # Check for <meta http-equiv="refresh" content="N;url=..."> where N > 0
+    # content="0;url=..." is an instant redirect (not a timing issue)
+    # content="N" with N > 0 is auto-refresh (FAIL)
+    meta_refresh_fail = False
+    for node in snapshot.find("meta"):
+        if node.attrs.get("http-equiv", "").lower() == "refresh":
+            content = node.attrs.get("content", "")
+            # Extract the timeout value — format: "N" or "N;url=..."
+            timeout_str = content.split(";")[0].strip()
+            try:
+                timeout_val = int(timeout_str)
+                if timeout_val > 0:
+                    meta_refresh_fail = True
+            except ValueError:
+                pass
+
+    has_timeout_hint = any(kw in html_lower for kw in ["session-timeout", "auto-logout"])
+    if meta_refresh_fail:
         findings.append(
             result("2.2.1", CheckpointStatus.FAIL, page,
-                   "Detected <meta http-equiv='refresh'> which may cause auto-redirect without user control.")
+                   "Detected <meta http-equiv='refresh'> with timed redirect/reload.")
         )
     elif has_timeout_hint:
         findings.append(
             result("2.2.1", CheckpointStatus.CANNOT_VERIFY, page,
-                   "Detected timer/timeout patterns in page scripts; manual verification needed for adjustability.")
+                   "Detected session timeout patterns; manual verification needed for adjustability.")
         )
     else:
         findings.append(

@@ -1,0 +1,108 @@
+{
+  "name": "Tata Mutual Fund Online",
+  "app_id": "TATAMFONLINE",
+  "start_url": "https://online.tatamutualfund.com/mf/login",
+  "domain": "online.tatamutualfund.com",
+  "flow_steps": [
+    {
+      "id": "complete_login",
+      "description": "Fill PAN, user completes captcha and OTP manually",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='PAN'], input[name*='pan'], input[id*='pan'], input[type='text']",
+          "value": "FTAPB5787H",
+          "description": "Fill PAN number"
+        },
+        {
+          "type": "manual",
+          "description": "User completes captcha and OTP to finish login",
+          "instructions": "PAN is filled. Now complete the captcha, click submit/continue, enter the OTP, and click submit. Scanner resumes once you reach the dashboard.",
+          "completion_mode": "all",
+          "completion_url_not_contains": ["/login"],
+          "timeout_ms": 600000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated routes including dashboard, portfolio, transactions, SIP, reports, statements, profile, and settings"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a mutual fund investor using the Tata Mutual Fund online portal. Explore dashboard, portfolio holdings, transactions, SIP management, statements, reports, profile, and settings.",
+      "major_sections": [
+        "dashboard",
+        "portfolio",
+        "transactions",
+        "SIP",
+        "reports",
+        "statements",
+        "profile",
+        "settings"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "portfolio",
+        "holdings",
+        "transaction",
+        "SIP",
+        "report",
+        "statement",
+        "NAV",
+        "redeem",
+        "purchase",
+        "switch",
+        "profile",
+        "settings",
+        "account"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal"
+      ],
+      "journey_rules": [
+        "After reaching the dashboard, explore main navigation items before going into sub-pages.",
+        "If portfolio or holdings are visible, open at least one fund detail view.",
+        "Explore transaction history and statement sections to cover tables and download features."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

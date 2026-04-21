@@ -1,0 +1,78 @@
+{
+  "name": "ICICI Direct Open Demat UAT",
+  "app_id": "ICICIDEMAT",
+  "start_url": "https://opendematuat.icicidirect.com/open-demat/mobile",
+  "domain": "opendematuat.icicidirect.com",
+  "flow_steps": [
+    {
+      "id": "mobile_page",
+      "description": "Enter mobile number and proceed",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='tel'], input[type='number'], input[placeholder*='mobile' i], input[placeholder*='phone' i], input[name*='mobile' i]",
+          "value": "9673224177",
+          "description": "Fill mobile number"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], button:has-text('Continue'), button:has-text('Proceed'), button:has-text('Send OTP'), button:has-text('Get OTP'), button:has-text('Submit')",
+          "description": "Click proceed/submit"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "otp_page",
+      "description": "Enter OTP 1111",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Enter OTP 1111 and submit. If OTP fields are individual boxes, fill 1 in each. Click Verify/Submit.",
+          "instructions": "Enter OTP: 1111 in the OTP field(s) and click Verify/Submit. Scanner continues once the page changes.",
+          "completion_mode": "all",
+          "completion_url_not_contains": ["/mobile"],
+          "timeout_ms": 120000,
+          "poll_interval_ms": 2000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "pan_details",
+      "description": "Fill PAN and personal details",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Fill PAN: DLVPK7116J, Name: RATNADEEP VIJAY KUDALKAR, DOB: 20/06/1991, Aadhar: 854310154245, OTP anywhere: 1111. Complete all form pages.",
+          "instructions": "Fill details — PAN: DLVPK7116J, Name: RATNADEEP VIJAY KUDALKAR, DOB: 20/06/1991, Aadhar: 8543 1015 4245. Use OTP 1111 everywhere. Navigate through all pages. When you reach the final page or summary, stop and let the scanner continue.",
+          "completion_mode": "all",
+          "completion_url_not_contains": ["/mobile"],
+          "timeout_ms": 600000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "max_screens": 20,
+    "unique_screen_dedup": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

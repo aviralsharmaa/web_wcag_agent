@@ -1,0 +1,100 @@
+{
+  "name": "Trust MF Public Website",
+  "app_id": "TRUSTMFPUB",
+  "start_url": "https://www.trustmf.com/",
+  "domain": "www.trustmf.com",
+  "flow_steps": [
+    {
+      "id": "landing_scan",
+      "description": "Scan the homepage",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all public pages",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all public pages — Home, About Us, Our Schemes, NAV, Fund Performance, Downloads, Investor Services, Contact, FAQs, KYC, Calculators, and any other sections."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a retail investor browsing the Trust Mutual Fund public website. Explore all informational pages, scheme details, NAV data, fund performance, downloads, investor services, calculators, and any other available sections.",
+      "major_sections": [
+        "home",
+        "about us",
+        "our schemes",
+        "NAV",
+        "fund performance",
+        "downloads",
+        "investor services",
+        "contact",
+        "FAQs",
+        "KYC",
+        "calculators",
+        "SIP",
+        "distributor"
+      ],
+      "preferred_tokens": [
+        "home",
+        "about",
+        "scheme",
+        "NAV",
+        "fund",
+        "performance",
+        "download",
+        "investor",
+        "service",
+        "contact",
+        "FAQ",
+        "KYC",
+        "calculator",
+        "SIP",
+        "distributor",
+        "factsheet",
+        "report",
+        "disclosure",
+        "policy",
+        "notice",
+        "circular"
+      ],
+      "avoid_tokens": [
+        "login",
+        "sign in",
+        "register",
+        "sign up",
+        "logout"
+      ],
+      "journey_rules": [
+        "Click each main navigation item one by one.",
+        "Explore all sub-menus, tabs, dropdowns, and expandable sections.",
+        "Stay within www.trustmf.com — do not navigate to external domains.",
+        "Do NOT click login or sign in links.",
+        "Explore footer links as well.",
+        "If there are scheme category pages, click into at least one scheme detail page per category."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

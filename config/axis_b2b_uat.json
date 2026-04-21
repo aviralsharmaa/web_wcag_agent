@@ -1,0 +1,123 @@
+{
+  "name": "Axis MF B2B UAT",
+  "app_id": "AXISB2BUAT",
+  "start_url": "https://b2buat.axismf.com/fund",
+  "domain": "b2buat.axismf.com",
+  "flow_steps": [
+    {
+      "id": "manual_login",
+      "description": "User logs in manually",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Log in with user ID 0797, PAN BPWPS6115L, password Axis@2025. Complete any captcha/OTP.",
+          "instructions": "Click Login, fill credentials (0797 / BPWPS6115L / Axis@2025), complete captcha/OTP. Scanner will detect when you reach the /fund dashboard.",
+          "completion_url_contains": "/fund",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated routes — Dashboard, Transact, Our Schemes, Knowledge Centre, Support, Investment Statistics, SIP Summary, Incomplete Transactions, Brokerage, Rejection Data, and any other sections. Click Business and Investor tabs too."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a mutual fund distributor (ARN holder) using the Axis MF B2B portal. Explore dashboard, initiate transactions (purchase, SIP, redemption, switch), view reports, portfolio, account details, NAV, statements, and any other available sections.",
+      "major_sections": [
+        "dashboard",
+        "transactions",
+        "purchase",
+        "SIP",
+        "redemption",
+        "switch",
+        "reports",
+        "portfolio",
+        "NAV",
+        "account",
+        "statements",
+        "settings",
+        "support",
+        "knowledge centre",
+        "our schemes"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "transaction",
+        "purchase",
+        "SIP",
+        "redeem",
+        "switch",
+        "report",
+        "portfolio",
+        "NAV",
+        "account",
+        "statement",
+        "folio",
+        "scheme",
+        "investor",
+        "business",
+        "history",
+        "order",
+        "mandate",
+        "brokerage",
+        "rejection",
+        "support",
+        "knowledge"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal"
+      ],
+      "journey_rules": [
+        "This is an SPA — ONLY use action 'click' on visible elements. NEVER type URLs directly or use 'navigate' action.",
+        "NEVER navigate to /landing-screen or any pre-login URL — it will log you out.",
+        "After reaching the dashboard, click each main nav item one by one: Dashboard, Transact, Our Schemes, Knowledge Centre, Support.",
+        "Under Transact, explore Purchase, SIP, Redemption, Switch sub-sections.",
+        "Click the Business and Investor tabs on the dashboard.",
+        "Explore all sub-menus, tabs, and expandable sections.",
+        "If you see dropdown menus, hover/click to reveal sub-items.",
+        "Do NOT click logout or sign out.",
+        "Do NOT submit any actual transactions — only explore the forms.",
+        "IMPORTANT: Any direct URL navigation will land on a blank white page and log you out. Only click visible elements."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

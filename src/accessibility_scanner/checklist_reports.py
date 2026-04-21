@@ -90,12 +90,14 @@ def _write_single_checklist_report(
         annotated_path = annotated_dir / f"state_{screen_tag}_annotated.png"
         crop_map: dict[str, str] = {}
         issue_annotated_map: dict[str, str] = {}
+        checklist_slug = f"{spec.sequence:02d}_{spec.slug}"
         if raw_screenshot_dst.exists() and screen_issues:
             outputs = annotate_issue_collection(
                 screenshot_path=str(raw_screenshot_dst),
                 issues=screen_issues,
                 annotated_path=str(annotated_path),
                 crop_dir=str(issues_dir),
+                checklist_slug=checklist_slug,
             )
             crop_map = {issue_id: path for issue_id, path in outputs.get("crops", [])}
             issue_annotated_map = {

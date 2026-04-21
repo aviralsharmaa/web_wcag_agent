@@ -1,0 +1,102 @@
+{
+  "name": "ICICI Direct - Production Website (Remaining Pages)",
+  "app_id": "ICICIDPROD2",
+  "start_url": "https://www.icicidirect.com/calculators/sip-calculator",
+  "domain": "www.icicidirect.com",
+  "flow_steps": [
+    {
+      "id": "calculators_sip",
+      "description": "Calculators > SIP Calculator",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.icicidirect.com/calculators/sip-calculator",
+          "description": "Navigate to SIP Calculator page"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "calculators_brokerage",
+      "description": "Calculators > Brokerage Calculator",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.icicidirect.com/calculators/brokerage-calculator",
+          "description": "Navigate to Brokerage Calculator page"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "about_us",
+      "description": "About Us",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.icicidirect.com/aboutus/overview",
+          "description": "Navigate to About Us page"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "faqs",
+      "description": "FAQs page",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.icicidirect.com/faqs",
+          "description": "Navigate to FAQs page"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "privacy_policy",
+      "description": "Privacy Policy",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.icicidirect.com/Services/PrivacyPolicy",
+          "description": "Navigate to Privacy Policy page"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "grievance_redressal",
+      "description": "Grievance Redressal",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://www.icicidirect.com/grievance-redressal/grievance-redressal.html",
+          "description": "Navigate to Grievance Redressal page"
+        }
+      ],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "max_screens": 100,
+    "max_consecutive_failures": 20,
+    "unique_screen_dedup": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

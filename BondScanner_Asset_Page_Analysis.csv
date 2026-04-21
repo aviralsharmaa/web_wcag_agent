@@ -1,0 +1,87 @@
+Asset Analysis — BondScanner Website,,,,,,,
+,,,,,,,
+BASIC INFORMATION,,,,,,,
+Application,BondScanner,,,,,,
+Platform,"Web (Next.js — hosted on AWS/Vercel)",,,,,,
+Production URL,https://bondscanner.com,,,,,,
+Functional SPOC,BondScanner Product Team,,,,,,
+IT / Dev SPOC,support@bondscanner.com,,,,,,
+Compliance Officer,"CS Vandana Jhinjheria | +91 99105 49470 | Vandana.jhinjheria@bondscanner.com",,,,,,
+Legal Entity,"Sustvest Broking Private Limited (U66120HR2024PTC119856)",,,,,,
+SEBI Reg.,"SEBI Reg. INZ000320834 | NSE Member Code: 90404",,,,,,
+Office,"Sco No. 32, 2nd Floor, M3M 113 Market, Sector 113, Narsinghpur, Gurgaon, Haryana 122004",,,,,,
+1st Scan,Pending,,,,,,
+Total Pages,38,,,,,,
+CREDENTIALS,,,,,,,
+Primary,"Login via email: operations@bondscanner.com | Static OTP: 1001",,,,,,
+,,,,,,,
+DETAILED UAT / TEST LOGINS,,,,,,,
+#,Login Type,Credentials,URL / Notes,,,,
+1,Email Login,"Email: operations@bondscanner.com | OTP: 1001",https://bondscanner.com (click Login → Login with email),,,,
+,,,,,,,
+PAGE ANALYSIS SUMMARY,,,,,,,
+Total Pages,38,,,,,,
+P0 Critical,10,,,,,,
+P1 High,14,,,,,,
+P2 Medium,11,,,,,,
+P3 Low,3,,,,,,
+Categories,8,,,,,,
+,,,,,,,
+CATEGORY BREAKDOWN,,,,,,,
+#,Category,Count,% Total,,,,
+1,Authentication,3,8%,,,,
+2,Home / Bond Explorer,4,11%,,,,
+3,Learn / Educational,6,16%,,,,
+4,Calculators / Tools,3,8%,,,,
+5,Bond Browsing & Details (Post-Login),12,31%,,,,
+6,Company / About,5,13%,,,,
+7,"Legal, Compliance & Static",5,13%,,,,
+,,,,,,,
+COMPLETE PAGE INVENTORY,,,,,,,
+#,Route / Screen,Description,Full URL / Deep Link,Category,Priority,Audit Status,Notes
+1,/,Homepage / Landing Page,https://bondscanner.com/,Home / Bond Explorer,P0,Confirmed,"Hero section, value props, market stats, bond highlights, CTA to explore/invest"
+2,/bonds?tab=explore,Bond Explorer — Browse All Bonds,https://bondscanner.com/bonds?tab=explore,Home / Bond Explorer,P0,Confirmed,"Primary post-login landing; tabs: Explore, Holdings, Orders; bond cards with yield/rating/filters"
+3,/bonds?tab=holdings,Holdings / Portfolio,https://bondscanner.com/bonds?tab=holdings,Home / Bond Explorer,P0,Confirmed,"Portfolio tab — active holdings, invested bonds, returns"
+4,/bonds?tab=orders,Orders,https://bondscanner.com/bonds?tab=orders,Home / Bond Explorer,P0,Confirmed,"Orders tab — pending, completed, cancelled orders"
+5,Login Page,Login — Select Method (Email / Google),https://bondscanner.com (Login button),Authentication,P0,Pending,"Entry point for authentication; options: Login with email, Google sign-in"
+6,Login → Email Entry,Login — Enter Email Address,https://bondscanner.com (email login flow),Authentication,P0,Pending,"Email input, Send OTP button"
+7,Login → OTP Verification,OTP Verification (4-digit static OTP),https://bondscanner.com (OTP step),Authentication,P0,Pending,"OTP input, verify/submit; test wrong OTP, resend"
+8,/explore/government-bonds,Government Bonds — Educational Guide,https://bondscanner.com/explore/government-bonds,Learn / Educational,P1,Pending,"Educational page on G-Sec, SDL, T-Bills; learn section"
+9,/explore/corporate-bonds,Corporate Bonds — Educational Guide,https://bondscanner.com/explore/corporate-bonds,Learn / Educational,P1,Pending,"Educational page on corporate debt securities, yield comparison"
+10,/explore/bond-laddering,Bond Laddering — Strategy Guide,https://bondscanner.com/explore/bond-laddering,Learn / Educational,P2,Pending,"Investment strategy guide on bond laddering technique"
+11,/explore/perpetual-bonds,Perpetual Bonds — Educational Guide,https://bondscanner.com/explore/perpetual-bonds,Learn / Educational,P2,Pending,"Guide on perpetual/AT1 bonds, risks, features"
+12,/explore/how-to-invest-in-bonds-with-demat-account,Invest with Existing Demat Account,https://bondscanner.com/explore/how-to-invest-in-bonds-with-demat-account,Learn / Educational,P1,Pending,"How-to guide for existing demat holders to invest via BondScanner"
+13,/explore/open-account,Open a Bond Investment Account,https://bondscanner.com/explore/open-account,Learn / Educational,P1,Pending,"Account opening guide / CTA; steps to start investing"
+14,/calculators/xirr-calculator,XIRR Calculator,https://bondscanner.com/calculators/xirr-calculator,Calculators / Tools,P1,Pending,"Inputs: start date, maturity date, investment amount, maturity amount"
+15,/calculators/emi-calculator,EMI Calculator,https://bondscanner.com/calculators/emi-calculator,Calculators / Tools,P2,Pending,"Inputs: loan amount, interest rate, loan tenure; outputs monthly EMI"
+16,/calculators/roi-calculator,ROI Calculator,https://bondscanner.com/calculators/roi-calculator,Calculators / Tools,P2,Pending,"Inputs: initial investment, final value; outputs ROI percentage"
+17,/deal-details/{ISIN}?id=,Individual Bond Detail Page,https://bondscanner.com/deal-details/INE08KJ07175?id=1G4H2JFE7G,Bond Browsing & Details (Post-Login),P0,Confirmed,"Bond details: yield, credit rating, issuer profile, docs, invest CTA; scrollable with 5+ folds"
+18,/deal-details/{ISIN} (example 2),Bond Detail — DVARA KSHETRIYA,https://bondscanner.com/deal-details/INE179P07621?id=YA2U5NC342,Bond Browsing & Details (Post-Login),P0,Confirmed,"13.2% yield bond detail page; same skeleton as #17"
+19,/deal-details/{ISIN} (example 3),Bond Detail — Third issuer,https://bondscanner.com/deal-details/INE389Z07070?id=VNNRFXQFBL,Bond Browsing & Details (Post-Login),P1,Confirmed,"Same skeleton as #17; different issuer data"
+20,/view-bonds?tags=ALL_BONDS,All Bonds — Filtered View,https://bondscanner.com/view-bonds?tags=ALL_BONDS,Bond Browsing & Details (Post-Login),P1,Confirmed,"Full bond listing with all available bonds"
+21,/view-bonds?tags=AAA_AA_BONDS,AAA / AA Rated Bonds,https://bondscanner.com/view-bonds?tags=AAA_AA_BONDS,Bond Browsing & Details (Post-Login),P1,Confirmed,"Filtered view: highest credit-rated bonds only"
+22,/view-bonds?tags=HIGH_YIELDING_BONDS,High Yielding Bonds,https://bondscanner.com/view-bonds?tags=HIGH_YIELDING_BONDS,Bond Browsing & Details (Post-Login),P1,Confirmed,"Filtered view: bonds with above-average yields"
+23,/view-bonds?tags=MOST_BOUGHT_BONDS,Most Bought Bonds,https://bondscanner.com/view-bonds?tags=MOST_BOUGHT_BONDS,Bond Browsing & Details (Post-Login),P1,Confirmed,"Filtered view: most popular bonds by purchase volume"
+24,/view-bonds?tags=NEW_BONDS,New Bonds,https://bondscanner.com/view-bonds?tags=NEW_BONDS,Bond Browsing & Details (Post-Login),P1,Confirmed,"Filtered view: recently listed bonds"
+25,/view-bonds?tags=MONTHLY_PAYOUT_BONDS,Monthly Payout Bonds,https://bondscanner.com/view-bonds?tags=MONTHLY_PAYOUT_BONDS,Bond Browsing & Details (Post-Login),P2,Confirmed,"Filtered view: bonds with monthly coupon payout"
+26,/view-bonds?tags=MATURE_2027_BONDS,Bonds Maturing 2027,https://bondscanner.com/view-bonds?tags=MATURE_2027_BONDS,Bond Browsing & Details (Post-Login),P2,Confirmed,"Filtered view: bonds maturing in 2027"
+27,/view-bonds?tags=TEN_THOUSAND_BONDS,₹10K Minimum Bonds,https://bondscanner.com/view-bonds?tags=TEN_THOUSAND_BONDS,Bond Browsing & Details (Post-Login),P2,Confirmed,"Filtered view: bonds starting from ₹10,000"
+28,/view-bonds?tags=THREE_TO_SIX_MONTH_TENURE_BONDS,3–6 Month Tenure Bonds,https://bondscanner.com/view-bonds?tags=THREE_TO_SIX_MONTH_TENURE_BONDS,Bond Browsing & Details (Post-Login),P2,Confirmed,"Filtered view: short-tenure bonds (3-6 months)"
+29,/about-us,About Us — Company & Team,https://bondscanner.com/about-us,Company / About,P2,Confirmed,"Company info, compliance officer (CS Vandana Jhinjheria), office address"
+30,/careers,Careers — Job Openings,https://bondscanner.com/careers,Company / About,P3,Pending,"24 open positions across Engineering, Design, Data, Product, Sales, Finance, Marketing, Operations"
+31,/contact-us,Contact Us — Support Hub,https://bondscanner.com/contact-us/,Company / About,P1,Pending,"Email, WhatsApp (+91 93807 40546), phone (+91 7676587611), PwD accessibility support"
+32,/blog,Blog — Articles & Insights,https://bondscanner.com/blog,Company / About,P2,Pending,"Blog listing; categories: News, Product Updates, Corporate Bonds, Education, Strategy, Research"
+33,/blog/{slug},Individual Blog Article,https://bondscanner.com/blog/[article-slug],Company / About,P2,Pending,"70+ articles on bond types, taxation, strategy, market analysis"
+34,/investor-awareness,Investor Awareness & Grievance Redressal,https://bondscanner.com/investor-awareness,"Legal, Compliance & Static",P1,Confirmed,"4-level grievance mechanism, fraud awareness, KYC info, SEBI SCORES link"
+35,/privacy-policy,Privacy Policy,https://bondscanner.com/privacy-policy,"Legal, Compliance & Static",P2,Pending,"Data collection, processing, regulatory disclosures"
+36,/terms-and-conditions,Terms & Conditions,https://bondscanner.com/terms-and-conditions,"Legal, Compliance & Static",P2,Pending,"Usage terms, investor protection guidelines, unauthorized transaction prevention"
+37,/doc/Investor_charter.pdf,Investor Charter (PDF),https://bondscanner.com/doc/Investor_charter.pdf,"Legal, Compliance & Static",P3,Pending,"SEBI-mandated investor charter document"
+38,Cookie Policy Modal,Cookie Consent / Policy Overlay,https://bondscanner.com (modal overlay),"Legal, Compliance & Static",P3,Confirmed,"Cookie consent banner shown across pages"
+,,,,,,,
+NOTES,,,,,,,
+"Post-login structure is tab-based: /bonds?tab=explore (browse), /bonds?tab=holdings (portfolio), /bonds?tab=orders (order history)",,,,,,,
+"Bond detail pages use route /deal-details/{ISIN}?id={internal-id} — not /bond/{slug}",,,,,,,
+"Filtered bond views use /view-bonds?tags={TAG} with 9 tag categories confirmed",,,,,,,
+"60 screens captured across 18 unique URLs during scan (many scroll folds per page)",,,,,,,
+"Login flow: Homepage → Login button → Select 'Login with email' → Enter email → Send OTP → Enter OTP (static: 1001) → /bonds?tab=explore",,,,,,,
+"Scan incomplete — stopped at page 48/60 due to LLM API connection errors. May need re-scan for full coverage.",,,,,,,

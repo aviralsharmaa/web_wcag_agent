@@ -1,0 +1,88 @@
+{
+  "name": "HDFC InvNow Service UAT",
+  "app_id": "HDFCINVNOWUAT",
+  "start_url": "https://invnowserviceuat.hdfcsec.com/",
+  "domain": "hdfcsec.com",
+  "flow_steps": [
+    {
+      "id": "landing_page",
+      "description": "Scan the landing / login page",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "login_mobile",
+      "description": "Enter mobile number and request OTP",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='tel'], input[placeholder*='Mobile' i], input[placeholder*='Phone' i], input[name*='mobile' i], input[name*='phone' i], input[id*='mobile' i], input[id*='phone' i], input[inputmode='numeric'], input[type='text']",
+          "value": "9876543210",
+          "description": "Enter mobile number"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Send OTP'), button:has-text('Get OTP'), button:has-text('Request OTP'), button:has-text('Continue'), button:has-text('Proceed'), button:has-text('Submit'), button[type='submit'], input[type='submit']",
+          "description": "Click Send OTP / Continue"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "enter_otp",
+      "description": "Enter OTP and submit",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='OTP' i], input[name*='otp' i], input[id*='otp' i], input[type='tel'], input[inputmode='numeric'], input[maxlength='6'], input[maxlength='4'], input[type='text']",
+          "value": "123456",
+          "description": "Enter OTP"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Verify'), button:has-text('Submit'), button:has-text('Continue'), button:has-text('Proceed'), button:has-text('Login'), button:has-text('Sign In'), button[type='submit'], input[type='submit']",
+          "description": "Click Verify / Submit OTP"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan post-login dashboard",
+      "scan_scope": "post_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all reachable post-login pages and routes",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all pages — dashboard, portfolio, orders, reports, settings, profile, and any other sections"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

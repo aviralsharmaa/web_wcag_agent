@@ -1,0 +1,193 @@
+{
+  "name": "Dhan UAT",
+  "app_id": "DHANUAT",
+  "start_url": "https://weblogin.dhanuat.co/",
+  "domain": "weblogin.dhanuat.co",
+  "flow_steps": [
+    {
+      "id": "login_page",
+      "description": "Scan the login page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_login_id",
+      "description": "Enter login ID and submit",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='tel'], input[type='text'], input[placeholder*='mobile' i], input[placeholder*='phone' i], input[placeholder*='number' i], input[name*='mobile' i], input[name*='phone' i], input[id*='mobile' i], input[id*='phone' i], input[id*='login' i]",
+          "value": "9769952772",
+          "description": "Fill Login ID / Mobile Number"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], button:has-text('Continue'), button:has-text('CONTINUE'), button:has-text('Proceed'), button:has-text('Next'), button:has-text('Send OTP'), button:has-text('Get OTP'), button:has-text('Login'), button:has-text('Submit'), input[type='submit']",
+          "description": "Click Continue/Submit"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "otp_page",
+      "description": "Scan the OTP page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_otp",
+      "description": "Enter OTP",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='tel'], input[type='number'], input[type='text'], input[placeholder*='OTP' i], input[name*='otp' i], input[id*='otp' i], input[inputmode='numeric']",
+          "value": "111111",
+          "description": "Fill OTP"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], button:has-text('Verify'), button:has-text('VERIFY'), button:has-text('Continue'), button:has-text('CONTINUE'), button:has-text('Submit'), button:has-text('Proceed'), input[type='submit']",
+          "description": "Click Verify/Continue"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "pin_page",
+      "description": "Scan the PIN page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_pin",
+      "description": "Enter PIN",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[type='tel'], input[type='number'], input[placeholder*='PIN' i], input[placeholder*='pin' i], input[name*='pin' i], input[id*='pin' i], input[inputmode='numeric']",
+          "value": "111111",
+          "description": "Fill PIN"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], button:has-text('Login'), button:has-text('LOGIN'), button:has-text('Continue'), button:has-text('CONTINUE'), button:has-text('Submit'), button:has-text('Proceed'), button:has-text('Verify'), input[type='submit']",
+          "description": "Click Login/Submit"
+        }
+      ],
+      "wait_after": 8000
+    },
+    {
+      "id": "manual_login_assist",
+      "description": "Handle any additional auth step",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete any remaining login step if needed.",
+          "instructions": "If there's an extra step (captcha, etc.), complete it. Scanner auto-continues when dashboard loads.",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan post-login dashboard",
+      "scan_scope": "post_login",
+      "actions": []
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all post-login pages",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all post-login pages — Dashboard, Portfolio, Orders, Watchlist, Markets, Stocks, Mutual Funds, IPO, Reports, Settings, Profile, Funds, and any other sections."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a retail investor using the Dhan trading platform. Explore all sections including Dashboard, Portfolio, Orders, Watchlist, Markets, Stocks, Mutual Funds, IPO, Reports, Settings, and Profile.",
+      "major_sections": [
+        "dashboard",
+        "portfolio",
+        "orders",
+        "watchlist",
+        "markets",
+        "stocks",
+        "mutual funds",
+        "IPO",
+        "reports",
+        "settings",
+        "profile",
+        "funds"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "portfolio",
+        "order",
+        "watchlist",
+        "market",
+        "stock",
+        "mutual fund",
+        "IPO",
+        "report",
+        "setting",
+        "profile",
+        "fund",
+        "trade",
+        "buy",
+        "sell",
+        "holdings",
+        "positions",
+        "SIP",
+        "history",
+        "option",
+        "futures",
+        "commodity"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "log out",
+        "app download",
+        "play store",
+        "app store"
+      ],
+      "journey_rules": [
+        "Click each main navigation item one by one.",
+        "Explore all sub-menus, tabs, dropdowns, and expandable sections.",
+        "Stay within the dhanuat.co domain — do not navigate to external domains.",
+        "Do NOT click logout or sign out.",
+        "Check portfolio, orders, and funds sections.",
+        "If there are stock detail pages, explore at least one."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "name": "ICICI Direct Open Demat UAT",
+  "app_id": "ICICIDEMATUAT",
+  "start_url": "https://opendematuat.icicidirect.com/open-demat/mobile",
+  "domain": "opendematuat.icicidirect.com",
+  "flow_steps": [
+    {
+      "id": "screen1_mobile",
+      "description": "Scan mobile number entry screen",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_mobile",
+      "description": "Fill mobile number",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='tel'], input[type='number'], input[placeholder*='mobile' i], input[placeholder*='phone' i], input[name*='mobile' i], input[name*='phone' i], input[id*='mobile' i], input[id*='phone' i], input[type='text']",
+          "value": "9673224177",
+          "description": "Fill mobile number"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], button:has-text('Continue'), button:has-text('CONTINUE'), button:has-text('Proceed'), button:has-text('PROCEED'), button:has-text('Submit'), button:has-text('Next'), button:has-text('Send OTP'), button:has-text('Get OTP'), input[type='submit']",
+          "description": "Click continue/submit"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "manual_otp_1",
+      "description": "User completes OTP or any verification",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete OTP verification or any other step.",
+          "instructions": "Fill OTP if needed, complete any verification. Scanner auto-continues when URL changes from /mobile.",
+          "completion_url_not_contains": ["/mobile", "/email"],
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_scan_1",
+      "description": "Scan KYC page - section 1",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_pan_details",
+      "description": "Fill PAN and personal details",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='PAN' i], input[name*='pan' i], input[id*='pan' i]",
+          "value": "DLVPK7116J",
+          "description": "Fill PAN"
+        },
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='Aadhar' i], input[placeholder*='Aadhaar' i], input[placeholder*='aadhar' i], input[name*='aadhar' i], input[name*='aadhaar' i], input[id*='aadhar' i], input[id*='aadhaar' i]",
+          "value": "854310154245",
+          "description": "Fill Aadhar"
+        },
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='DOB' i], input[placeholder*='date' i], input[type='date'], input[name*='dob' i], input[name*='birth' i], input[id*='dob' i]",
+          "value": "20/06/1991",
+          "description": "Fill DOB"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "manual_kyc_2",
+      "description": "User completes KYC section and moves to next",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete remaining KYC fields and click next/continue.",
+          "instructions": "Fill remaining fields, submit. Scanner will scan the next section automatically (even if URL stays the same).",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_scan_2",
+      "description": "Scan KYC page - section 2",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_kyc_3",
+      "description": "User completes this section and moves to next",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete this section and move to next.",
+          "instructions": "Fill fields, click next/continue. Scanner picks up automatically.",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_scan_3",
+      "description": "Scan KYC page - section 3",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_kyc_4",
+      "description": "User completes this section and moves to next",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete this section and move to next.",
+          "instructions": "Fill fields, click next/continue. Scanner picks up automatically.",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_scan_4",
+      "description": "Scan KYC page - section 4",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_kyc_5",
+      "description": "User completes this section and moves to next",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete this section and move to next.",
+          "instructions": "Fill fields, click next/continue. Scanner picks up automatically.",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_scan_5",
+      "description": "Scan KYC page - section 5",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_kyc_6",
+      "description": "User completes this section and moves to next",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete this section and move to next.",
+          "instructions": "Fill fields, click next/continue. Scanner picks up automatically.",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_scan_6",
+      "description": "Scan KYC page - section 6",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_kyc_7",
+      "description": "User completes this section and moves to next",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete this section and move to next.",
+          "instructions": "Fill fields, click next/continue. Scanner picks up automatically.",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_scan_7",
+      "description": "Scan KYC page - section 7",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_kyc_8",
+      "description": "User completes this section and moves to next",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete this section and move to next.",
+          "instructions": "Fill fields, click next/continue. Scanner picks up automatically.",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "kyc_scan_8",
+      "description": "Scan KYC page - section 8",
+      "scan_scope": "pre_login",
+      "actions": []
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "unique_screen_dedup": false,
+    "llm_failure_fallback": true,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

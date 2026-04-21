@@ -1,0 +1,140 @@
+{
+  "name": "Tata Capital Link Scan",
+  "app_id": "TATACAPLINK",
+  "start_url": "https://transmail.ftrans01.com/HDPTGKBJALY?id=67359=cklSUwMPCwRfRVQADgAADAhVXwEFAgEPAQQNAVZVBQEGAgQBUAxdAARaWlYFAQpXCgIaXVpeWk1LQlgXHFYkFlBBAwBUSFFFB1VNUFhbTgUOBlABDAQAD1wHDFNdD1NRTV0WF0VLAh5JTRFSWUVfVVBdSFZBRFJXFgEITQZYCU15cTI3cnN6eyd1OgxeUk5CCg==&fl=WUEWE0YCFx4KSRNGVkJGV1FXCh5BV0dYBlBJChFWCExSWg9MYUpZUg10Gn9YV1wbGh4PWFl5R0k2UksGAFlLUwYCVFEGAQoEUw9QAQIABwUAAQ==",
+  "domain": "tatacapital.com",
+  "flow_steps": [
+    {
+      "id": "screen1_scan",
+      "description": "Scan the first page after redirect",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_otp_1",
+      "description": "User enters OTP 555555",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Enter OTP 555555 and submit. Scanner will detect when the page changes.",
+          "instructions": "Enter OTP 555555 and submit. Scanner auto-continues when URL changes.",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "screen2_scan",
+      "description": "Scan the next screen",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_mobile_otp",
+      "description": "User enters mobile OTP 333333",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Enter mobile OTP 333333 and submit. Scanner will detect when the page changes.",
+          "instructions": "Enter mobile OTP 333333 and submit. Scanner auto-continues when URL changes.",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "screen3_scan",
+      "description": "Scan screen 3",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_step_3",
+      "description": "User continues to next screen",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Continue to next screen. Scanner auto-continues on page change.",
+          "instructions": "Complete this screen and move to the next.",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "screen4_scan",
+      "description": "Scan screen 4",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_step_4",
+      "description": "User continues to next screen",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Continue to next screen.",
+          "instructions": "Complete this screen and move to the next.",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "screen5_scan",
+      "description": "Scan screen 5",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_step_5",
+      "description": "User continues to next screen",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Continue to next screen.",
+          "instructions": "Complete this screen and move to the next.",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "screen6_scan",
+      "description": "Scan screen 6 (if exists)",
+      "scan_scope": "pre_login",
+      "actions": []
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "name": "Motilal Oswal Invest",
+  "app_id": "MOTILAL",
+  "start_url": "https://invest.motilaloswal.com/",
+  "domain": "invest.motilaloswal.com",
+  "flow_steps": [
+    {
+      "id": "landing_scan",
+      "description": "Scan the landing page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "click_new_version",
+      "description": "Click New Version option",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "a:has-text('New Version'), button:has-text('New Version'), *:has-text('New Version')",
+          "description": "Click on New Version"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "scan_login_page",
+      "description": "Scan the login page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_userid",
+      "description": "Enter User ID",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='User' i], input[placeholder*='Client' i], input[name*='user' i], input[name*='client' i], input[id*='user' i], input[id*='client' i], input[id*='login' i], input[type='text']",
+          "value": "Y04140",
+          "description": "Fill User ID"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Log in with password'), a:has-text('Log in with password'), button:has-text('Login with password'), a:has-text('Login with password'), button:has-text('Password'), a:has-text('Password')",
+          "description": "Click Log in with password"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "fill_password",
+      "description": "Enter password and proceed",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[placeholder*='password' i], input[name*='password' i], input[name*='pass' i], input[id*='password' i], input[id*='pass' i]",
+          "value": "q123456",
+          "description": "Fill password"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Proceed'), button:has-text('PROCEED'), button:has-text('Continue'), button:has-text('Login'), button:has-text('LOG IN'), button:has-text('Submit'), button[type='submit'], input[type='submit']",
+          "description": "Click Proceed"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "fill_dob",
+      "description": "Enter DOB",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='DOB' i], input[placeholder*='date' i], input[placeholder*='birth' i], input[type='date'], input[name*='dob' i], input[name*='birth' i], input[id*='dob' i], input[id*='birth' i], input[type='text']",
+          "value": "01/01/1984",
+          "description": "Fill DOB"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Proceed'), button:has-text('PROCEED'), button:has-text('Continue'), button:has-text('Login'), button:has-text('LOG IN'), button:has-text('Submit'), button:has-text('Verify'), button[type='submit'], input[type='submit']",
+          "description": "Click Proceed/Submit"
+        }
+      ],
+      "wait_after": 8000
+    },
+    {
+      "id": "manual_login_assist",
+      "description": "Manual assist if login needs extra step",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "If login needs any extra step (OTP, captcha), complete it manually.",
+          "instructions": "Complete any remaining login step if needed. Scanner auto-continues when dashboard loads.",
+          "completion_url_changed": true,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan post-login dashboard",
+      "scan_scope": "post_login",
+      "actions": []
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all post-login pages",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all post-login pages — Dashboard, Portfolio, Orders, Watchlist, Markets, Stocks, Mutual Funds, IPO, Research, Reports, Settings, Profile, and any other sections."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a retail investor using the Motilal Oswal trading platform. Explore all sections including Dashboard, Portfolio, Orders, Watchlist, Markets, Stocks, Mutual Funds, IPO, Research, Reports, Settings, and Profile.",
+      "major_sections": [
+        "dashboard",
+        "portfolio",
+        "orders",
+        "watchlist",
+        "markets",
+        "stocks",
+        "mutual funds",
+        "IPO",
+        "research",
+        "reports",
+        "settings",
+        "profile",
+        "funds"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "portfolio",
+        "order",
+        "watchlist",
+        "market",
+        "stock",
+        "mutual fund",
+        "IPO",
+        "research",
+        "report",
+        "setting",
+        "profile",
+        "fund",
+        "trade",
+        "buy",
+        "sell",
+        "holdings",
+        "positions",
+        "SIP",
+        "history"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "log out",
+        "app download",
+        "play store",
+        "app store"
+      ],
+      "journey_rules": [
+        "Click each main navigation item one by one.",
+        "Explore all sub-menus, tabs, dropdowns, and expandable sections.",
+        "Stay within the invest.motilaloswal.com domain.",
+        "Do NOT click logout or sign out.",
+        "Explore at least one stock detail page if available.",
+        "Check portfolio, orders, and funds sections."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

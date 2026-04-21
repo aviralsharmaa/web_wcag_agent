@@ -1,0 +1,50 @@
+{
+  "name": "Kotak NEO Open Demat Account",
+  "app_id": "KOTAKOPENDEMAT",
+  "start_url": "https://www.kotakneo.com/open-demat-account/?utm_source=website-navigation",
+  "domain": "kotakneo.com",
+  "flow_steps": [
+    {
+      "id": "page_scan",
+      "description": "Scan current page state",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "manual_fill",
+      "description": "User fills form details — scanner captures every screen change",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Fill in form details step by step. Scanner will capture each screen state as URL or page content changes. Take your time — scanner polls every 2 minutes.",
+          "instructions": "Fill in the demat account form step by step. The scanner will capture each page/screen as you progress. When you are done with all steps, type 'done' or let the timeout expire.",
+          "completion_url_changed": true,
+          "timeout_ms": 7200000,
+          "poll_interval_ms": 120000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "max_screens": 50,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

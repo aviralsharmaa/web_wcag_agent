@@ -1,0 +1,91 @@
+{
+  "name": "Canara Robeco Smart Investor UAT",
+  "app_id": "CANARASIUAT",
+  "start_url": "https://uatsmartinvestor.canararobeco.com/",
+  "domain": "canararobeco.com",
+  "flow_steps": [
+    {
+      "id": "login_page",
+      "description": "Scan the login page",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "login_creds",
+      "description": "Enter PAN and password",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='PAN' i], input[name*='pan' i], input[id*='pan' i], input[placeholder*='User' i], input[name*='user' i], input[id*='user' i], input[type='text']:not([type='password']):visible",
+          "value": "APVPJ4213N",
+          "description": "Enter PAN"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[placeholder*='Password' i], input[name*='password' i], input[id*='password' i]",
+          "value": "Mar@2026",
+          "description": "Enter Password"
+        },
+        {
+          "type": "click",
+          "selector": "button:has-text('Login'), button:has-text('Sign In'), button:has-text('Log In'), button:has-text('Submit'), button:has-text('Continue'), button[type='submit'], input[type='submit']",
+          "description": "Click Login"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "security_question",
+      "description": "Wait for user to answer security question",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Answer the security question and click submit. The scanner will wait for you.",
+          "instructions": "Answer the security question shown on screen, then click submit/continue.",
+          "timeout_ms": 120000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 3000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan post-login dashboard",
+      "scan_scope": "post_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all reachable post-login pages and routes",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all pages — dashboard, portfolio, transactions, SIP, redemption, switch, statements, reports, profile, settings, and any other sections"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

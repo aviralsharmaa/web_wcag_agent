@@ -1,0 +1,160 @@
+{
+  "name": "Axis Direct UAT",
+  "app_id": "AXISDIRECTUAT",
+  "start_url": "https://galaxy.uat.asldt.com/",
+  "domain": "galaxy.uat.asldt.com",
+  "flow_steps": [
+    {
+      "id": "login_page",
+      "description": "Scan the main login page (pre-login)",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "click_username_login",
+      "description": "Click USERNAME to switch to username/password login form",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "a:has-text('USERNAME'), button:has-text('USERNAME'), span:has-text('USERNAME')",
+          "description": "Click USERNAME login option"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "username_login_form",
+      "description": "Scan username login form",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "fill_and_submit",
+      "description": "Fill username, password and login",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "fill",
+          "selector": "input[placeholder*='User' i], input[placeholder*='username' i], input[name*='user' i]",
+          "value": "amaruat",
+          "description": "Fill username"
+        },
+        {
+          "type": "fill",
+          "selector": "input[type='password'], input[placeholder*='Password' i]",
+          "value": "Axis@1234",
+          "description": "Fill password"
+        },
+        {
+          "type": "click",
+          "selector": "button[type='submit'], button:has-text('Login'), button:has-text('Sign In'), button:has-text('SIGN IN')",
+          "description": "Click login"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "otp_step",
+      "description": "Enter OTP 999999 and submit",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Enter OTP 999999 and click submit/verify",
+          "instructions": "Enter OTP: 999999 in the OTP field(s) and click Submit/Verify. Scanner resumes once you reach the dashboard.",
+          "completion_mode": "all",
+          "completion_url_not_contains": ["/login", "/otp", "/verify", "/sso"],
+          "timeout_ms": 180000,
+          "poll_interval_ms": 2000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens via clicking nav items",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated screens: Dashboard, Research, Orders, Portfolio, Mutual Funds, F&O, Watchlist, Market, Delivery, Funds. This is an SPA — click nav buttons/links to navigate, do NOT type URLs directly."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a retail investor using the Axis Direct trading platform. This is a Single Page Application — navigate ONLY by clicking visible buttons and links on the page, never by typing URLs in the address bar. Explore Dashboard, Research, Orders, Portfolio, Mutual Funds, F&O, Watchlist, Market, Delivery, and Funds sections.",
+      "major_sections": [
+        "Dashboard",
+        "Research",
+        "Orders",
+        "Portfolio",
+        "Mutual Funds",
+        "F&O",
+        "Watchlist",
+        "Market",
+        "Delivery",
+        "Funds"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "research",
+        "orders",
+        "portfolio",
+        "mutual fund",
+        "f&o",
+        "futures",
+        "options",
+        "watchlist",
+        "market",
+        "delivery",
+        "funds",
+        "holdings",
+        "positions",
+        "stocks",
+        "explore",
+        "view all"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal",
+        "give feedback"
+      ],
+      "journey_rules": [
+        "CRITICAL: This is an SPA — ONLY use action 'click' on visible elements. NEVER use action 'navigate' to type URLs directly.",
+        "After reaching the dashboard, click each main nav item (Dashboard, Research, Orders, Portfolio, Mutual Funds, F&O) one by one.",
+        "On each section page, click 'View All' or sub-tabs to explore deeper.",
+        "If you see STOCKS/FUTURES/OPTIONS tabs, click each one.",
+        "If a page shows 'Page 404', go back and try another nav item."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "name": "Tata Mutual Fund - Pragati",
+  "app_id": "TATAPRAGATI",
+  "start_url": "https://pragati.tatamutualfund.com/",
+  "domain": "pragati.tatamutualfund.com",
+  "flow_steps": [
+    {
+      "id": "complete_login",
+      "description": "User logs in manually — fill ARN, captcha, OTP, click Continue",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete login manually — fill ARN 136539, captcha, click Continue, enter OTP 11223, click Continue again",
+          "instructions": "Fill ARN: 136539, fill captcha, click Continue, enter OTP: 11223, click Continue. The scanner resumes once you reach the dashboard.",
+          "completion_mode": "all",
+          "completion_url_not_contains": ["/login"],
+          "timeout_ms": 600000,
+          "poll_interval_ms": 2000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "post_login_explore",
+      "description": "Explore all reachable post-login screens — dashboard, reports, transactions, settings",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all authenticated Pragati routes including dashboard, reports, transactions, investor details, and settings"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "manual_assist_on_stall": true,
+    "manual_assist_timeout_ms": 180000,
+    "manual_assist_idle_ms": 20000,
+    "manual_assist_poll_ms": 1500,
+    "strict_flow_actions": true,
+    "exploration_profile": {
+      "persona": "Behave like a mutual fund distributor using the Pragati platform. Explore the main dashboard, investor list, transactions, SIP management, reports, AMC tools, and any settings/profile pages.",
+      "major_sections": [
+        "dashboard",
+        "investors",
+        "transactions",
+        "SIP",
+        "reports",
+        "tools",
+        "profile",
+        "settings"
+      ],
+      "preferred_tokens": [
+        "dashboard",
+        "investor",
+        "transaction",
+        "SIP",
+        "report",
+        "portfolio",
+        "summary",
+        "AUM",
+        "brokerage",
+        "redemption",
+        "purchase",
+        "switch",
+        "tools",
+        "profile",
+        "settings"
+      ],
+      "avoid_tokens": [
+        "logout",
+        "sign out",
+        "forgot password",
+        "privacy",
+        "terms",
+        "legal"
+      ],
+      "journey_rules": [
+        "After reaching the dashboard, explore main navigation items before going into sub-pages.",
+        "If a list of investors or transactions is visible, open at least one detail view.",
+        "Explore reports and analytics sections to cover charts, tables, and export features."
+      ]
+    },
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

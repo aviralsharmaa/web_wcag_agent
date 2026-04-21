@@ -1,0 +1,470 @@
+{
+  "name": "Axis Direct Public Website",
+  "app_id": "AXISDIRECTPUB",
+  "start_url": "https://www.axisdirect.in/",
+  "domain": "axisdirect.in",
+  "flow_steps": [
+    {
+      "id": "homepage",
+      "description": "Scan the Axis Direct homepage",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "stocks",
+      "description": "Stocks page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/stocks", "description": "Stocks"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "derivatives",
+      "description": "Derivatives page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/derivatives", "description": "Derivatives"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "commodities",
+      "description": "Commodities page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/commodities", "description": "Commodities"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "etfs",
+      "description": "ETFs page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/etfs", "description": "ETFs"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "features",
+      "description": "Features page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/features", "description": "Features"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research",
+      "description": "Research page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/research", "description": "Research"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research_intraday",
+      "description": "Research - Intraday",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/research/intraday", "description": "Research Intraday"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research_long_term",
+      "description": "Research - Long Term",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/research/long-term", "description": "Research Long Term"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research_positional",
+      "description": "Research - Positional",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/research/positional", "description": "Research Positional"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research_others",
+      "description": "Research - Others",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/research/others", "description": "Research Others"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "open_demat",
+      "description": "Open Demat Account",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/open-demat-account", "description": "Open Demat"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "news",
+      "description": "News page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/news", "description": "News"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "events",
+      "description": "Events page",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/events", "description": "Events"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "partner_with_us",
+      "description": "Partner With Us",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/partner-with-us", "description": "Partner With Us"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "investor_app",
+      "description": "Investor App",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/platforms/investor-app", "description": "Investor App"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "trader_app",
+      "description": "Trader App",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/platforms/trader-app", "description": "Trader App"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "trader_pro",
+      "description": "Trader Pro",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://www.axisdirect.in/platforms/trader-pro", "description": "Trader Pro"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets",
+      "description": "Markets",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets", "description": "Markets"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_equity_today",
+      "description": "Markets - Equity Market Today",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets/equity/market-today", "description": "Equity Market Today"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_equity_indices",
+      "description": "Markets - Indices",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets/equity/indices", "description": "Indices"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_equity_top_performers",
+      "description": "Markets - Top Performers",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets/equity/top-performers", "description": "Top Performers"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_equity_news",
+      "description": "Markets - News",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets/equity/news", "description": "Market News"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_equity_stats",
+      "description": "Markets - Statistics",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets/equity/statistics", "description": "Statistics"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_derivatives_mt",
+      "description": "Markets - Derivative Market Today",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets/DerivativeMT", "description": "Derivative Market Today"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_derivatives_fa",
+      "description": "Markets - Derivative FA",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets/DerivativeFA", "description": "Derivative FA"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_mutual_funds",
+      "description": "Markets - Mutual Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/markets/mutual-funds", "description": "Mutual Funds Market"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "markets_commodity",
+      "description": "Markets - Commodity",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/app/index.php/market/commodity/markettoday", "description": "Commodity Market"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "mf",
+      "description": "Mutual Funds",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/mf", "description": "Mutual Funds"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "ipos",
+      "description": "IPOs",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/ipos", "description": "IPOs"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "sip",
+      "description": "SIP",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/offerings/products/sip", "description": "SIP"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "sip_calculator",
+      "description": "SIP Calculator",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/offerings/products/sip/sip-calculator", "description": "SIP Calculator"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "nps",
+      "description": "NPS",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/nps-national-pension-scheme", "description": "NPS"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "ncds_bonds_fds",
+      "description": "NCDs, Bonds, FDs",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/offerings/products/ncds-bonds-fds", "description": "NCDs Bonds FDs"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "tax_saving",
+      "description": "Tax Saving",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/offerings/products/tax-saving", "description": "Tax Saving"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "insurance",
+      "description": "Insurance",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/Insurance", "description": "Insurance"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "global_investing",
+      "description": "Global Investing",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/dynamicWeb/global-investing/US-Markets.html", "description": "Global Investing"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "tax_filing",
+      "description": "Tax Filing",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/offerings/tax-filing", "description": "Tax Filing"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "returns_calculator",
+      "description": "Returns Calculator",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/research/returns-calculator", "description": "Returns Calculator"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research_reports",
+      "description": "Research Reports",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/research/research-reports", "description": "Research Reports"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research_fundamental",
+      "description": "Research - Fundamental",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/research/reports/fundamental", "description": "Fundamental Reports"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research_mf_ideas",
+      "description": "Research - MF Ideas",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/research/research-ideas/mutual-fund-ideas", "description": "MF Ideas"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "research_sip_ideas",
+      "description": "Research - SIP Ideas",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/research/research-ideas/sip-ideas", "description": "SIP Ideas"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "learn_overview",
+      "description": "Learn - Overview",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/learn/overview", "description": "Learn Overview"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "learn_courses",
+      "description": "Learn - Courses",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/learn/courses", "description": "Courses"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "learn_eclasses",
+      "description": "Learn - E-Classes",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/learn/eclasses", "description": "E-Classes"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "learn_good_reads",
+      "description": "Learn - Good Reads",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/learn/good-reads", "description": "Good Reads"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "aboutus",
+      "description": "About Us",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/aboutus", "description": "About Us"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "contactus",
+      "description": "Contact Us",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/contactus", "description": "Contact Us"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "careers",
+      "description": "Careers",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/careers", "description": "Careers"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "faqs",
+      "description": "FAQs",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/faqs", "description": "FAQs"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "downloads",
+      "description": "Downloads",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/downloads", "description": "Downloads"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "investor_charter",
+      "description": "Investor Charter",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/investor-charter", "description": "Investor Charter"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "attention_investors",
+      "description": "Attention Investors",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/attention-investors", "description": "Attention Investors"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "sitemap",
+      "description": "Sitemap",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/sitemap", "description": "Sitemap"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "privacy_policy",
+      "description": "Privacy Policy",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/privacy-policy-home", "description": "Privacy Policy"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "disclaimer",
+      "description": "Disclaimer",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/disclaimer-home", "description": "Disclaimer"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "terms",
+      "description": "Terms and Conditions",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/terms-and-conditions-home", "description": "Terms"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "corporate_calendar",
+      "description": "Corporate Calendar",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/CorporateCalender", "description": "Corporate Calendar"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "smallcase",
+      "description": "Smallcase",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/app/index.php/smallcase/prelogin", "description": "Smallcase"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "managed_accounts",
+      "description": "Managed Accounts",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/offerings/ManagedAccounts", "description": "Managed Accounts"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "private_client_group",
+      "description": "Private Client Group",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/offerings/private-client-group", "description": "Private Client Group"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "nri_products",
+      "description": "NRI Products",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/offerings-nri/products-nri", "description": "NRI Products"}],
+      "wait_after": 3000
+    },
+    {
+      "id": "stay_vigilant",
+      "description": "Stay Vigilant",
+      "scan_scope": "pre_login",
+      "actions": [{"type": "navigate", "url": "https://simplehai.axisdirect.in/StayVigilant", "description": "Stay Vigilant"}],
+      "wait_after": 3000
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "max_screens": 100,
+    "unique_screen_dedup": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

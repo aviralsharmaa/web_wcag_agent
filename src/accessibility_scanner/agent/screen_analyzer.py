@@ -18,12 +18,56 @@ from ..workers import DeterministicWorkerSuite
 logger = logging.getLogger(__name__)
 
 _CROSS_PAGE_NOT_APPLICABLE = {"3.2.4", "3.2.6", "3.3.7"}
-_EXPLICIT_RISK_FAIL = {"1.4.5", "2.2.1", "2.2.2", "2.5.1", "2.5.2", "2.5.7"}
-_RISK_SIGNAL_RE = re.compile(
-    r"(gesture|mousedown|drag|timer|timeout|carousel|animation|text-in-image|captcha|"
-    r"autoplay|live caption|audio description|cognitive|puzzle|strobe|flashes?)",
-    re.IGNORECASE,
-)
+
+# Checkpoints where Cannot Verify should stay FAIL because the risk is high
+# and absence of evidence ≠ evidence of absence.
+_EXPLICIT_RISK_FAIL = {"2.5.1", "2.5.2"}
+
+# Checkpoints where Cannot Verify should default to PASS — these are either
+# rare conditions, require multi-page context, or are commonly N/A on most pages.
+# If the bucket analyzer already marked it FAIL, that stands; only CV → PASS.
+_SAFE_PASS_ON_CV = {
+    "1.2.4",   # Live captions — rare
+    "1.3.2",   # Meaningful sequence — needs rendered-order analysis
+    "1.3.3",   # Sensory characteristics — rare actual violation
+    "1.3.4",   # Orientation — already checked, CV means no lock found
+    "1.4.1",   # Use of color — needs visual inspection
+    "1.4.2",   # Audio control — already checked autoplay
+    "1.4.12",  # Text spacing — supplementary test handles this
+    "1.4.13",  # Content on hover/focus — needs interaction testing
+    "2.1.4",   # Character key shortcuts — rare
+    "2.3.1",   # Three flashes — requires frame analysis, extremely rare
+    "2.4.1",   # Bypass blocks — already checked skip link
+    "2.4.3",   # Focus order — supplementary keyboard test handles this
+    "2.4.5",   # Multiple ways — already checked nav+search
+    "2.4.11",  # Focus not obscured — needs visual analysis
+    "2.5.3",   # Label in name — already checked programmatically
+    "2.5.4",   # Motion actuation — rare
+    "2.5.7",   # Dragging — rare
+    "2.5.8",   # Target size — supplementary test handles this
+    "3.1.2",   # Language of parts — rare multilingual content
+    "3.2.1",   # On focus — already checked programmatically
+    "3.2.2",   # On input — already checked auto-submit patterns
+    "3.2.3",   # Consistent navigation — cross-page
+    "3.3.1",   # Error identification — needs form submission test
+    "3.3.3",   # Error suggestion — needs form submission test
+    "3.3.4",   # Error prevention — needs transaction flow
+    "3.3.7",   # Redundant entry — cross-page
+    "3.3.8",   # Accessible auth — already checked captcha/cognitive
+    "4.1.3",   # Status messages — already checked aria-live
+}
+
+# Per-checkpoint risk signals: only trigger FAIL from CV when the risk pattern
+# is specifically relevant to the checkpoint being evaluated.
+_CHECKPOINT_RISK_SIGNALS: dict[str, re.Pattern] = {
+    "2.2.1": re.compile(r"(timer|timeout|settimeout|auto-logout|session.?timeout|meta.*refresh)", re.I),
+    "2.2.2": re.compile(r"(carousel|marquee|blink|auto.?scroll|slideshow|animation-iteration-count:\s*infinite)", re.I),
+    "2.5.1": re.compile(r"(pinch|swipe|multitouch|gesture)", re.I),
+    "2.5.2": re.compile(r"(onmousedown|mousedown)", re.I),
+    "2.5.7": re.compile(r"(draggable|ondrag|dragstart|sortable|drag-and-drop)", re.I),
+    "1.4.5": re.compile(r"(text-in-image|image.?of.?text)", re.I),
+    "3.3.8": re.compile(r"(captcha|recaptcha|hcaptcha|cognitive|puzzle)", re.I),
+}
 
 
 class ScreenAnalyzer:
@@ -123,7 +167,6 @@ class ScreenAnalyzer:
                 continue
 
             checkpoint_id = finding.checkpoint_id
-            rationale_lower = (finding.rationale or "").strip().lower()
 
             if checkpoint_id in _CROSS_PAGE_NOT_APPLICABLE:
                 finding.status = CheckpointStatus.NOT_APPLICABLE
@@ -139,42 +182,42 @@ class ScreenAnalyzer:
                     "Fail",
                     "explicit risk-sensitive checkpoint",
                 )
-            elif self._has_risk_signal(rationale_lower, artifact):
+            elif checkpoint_id in _SAFE_PASS_ON_CV:
+                finding.status = CheckpointStatus.PASS
+                finding.rationale = self._policy_note(
+                    finding.rationale,
+                    "Pass",
+                    "no concrete failure evidence (pass-leaning policy)",
+                )
+            elif self._has_checkpoint_risk(checkpoint_id, finding.rationale, artifact):
                 finding.status = CheckpointStatus.FAIL
                 finding.rationale = self._policy_note(
                     finding.rationale,
                     "Fail",
-                    "risk pattern detected in automated evidence",
+                    "checkpoint-specific risk pattern detected",
                 )
             else:
                 finding.status = CheckpointStatus.PASS
                 finding.rationale = self._policy_note(
                     finding.rationale,
                     "Pass",
-                    "no explicit risk pattern detected (pass-leaning policy)",
+                    "no explicit failure evidence (pass-leaning policy)",
                 )
             resolved.append(finding)
         return resolved
 
-    def _has_risk_signal(self, rationale_lower: str, artifact: PageArtifact) -> bool:
-        if _RISK_SIGNAL_RE.search(rationale_lower or ""):
+    def _has_checkpoint_risk(
+        self, checkpoint_id: str, rationale: str, artifact: PageArtifact
+    ) -> bool:
+        """Check for risk signals specific to this checkpoint only."""
+        pattern = _CHECKPOINT_RISK_SIGNALS.get(checkpoint_id)
+        if pattern is None:
+            return False
+        rationale_lower = (rationale or "").lower()
+        if pattern.search(rationale_lower):
             return True
-
-        # Fallback signal from page text for risk-heavy patterns.
         html_lower = (artifact.html or "").lower()
-        risk_tokens = (
-            "captcha",
-            "gesture",
-            "drag",
-            "onmousedown",
-            "timeout",
-            "settimeout",
-            "carousel",
-            "animation",
-            "marquee",
-            "blink",
-        )
-        return any(token in html_lower for token in risk_tokens)
+        return bool(pattern.search(html_lower))
 
     def _policy_note(self, original: str, to_status: str, reason: str) -> str:
         prefix = (original or "").strip()

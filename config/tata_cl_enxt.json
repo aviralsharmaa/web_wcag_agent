@@ -1,0 +1,74 @@
+{
+  "name": "Tata CL e-NXT",
+  "app_id": "TATACLENXT",
+  "start_url": "https://e-nxt.com/Tatacl/m6jLwzn1",
+  "domain": "e-nxt.com",
+  "flow_steps": [
+    {
+      "id": "screen1_scan",
+      "description": "Scan the first page",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_step_1",
+      "description": "User interacts and moves to next screen",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Complete this screen and move to the next.",
+          "instructions": "Fill any fields, click submit/continue. Scanner detects page change.",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "screen2_scan",
+      "description": "Scan screen 2",
+      "scan_scope": "pre_login",
+      "actions": []
+    },
+    {
+      "id": "manual_step_2",
+      "description": "User continues to next screen",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "Continue to next screen.",
+          "instructions": "Complete this screen and move to the next.",
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 8000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "screen3_scan",
+      "description": "Scan screen 3 (if exists)",
+      "scan_scope": "pre_login",
+      "actions": []
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

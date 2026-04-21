@@ -1,0 +1,100 @@
+{
+  "name": "Tata Capital Online Pre-Develop",
+  "app_id": "TATACAPONLINE",
+  "start_url": "https://online1.tatacapital.com:8010/pre-develop1/#/login",
+  "domain": "tatacapital.com",
+  "flow_steps": [
+    {
+      "id": "login_page",
+      "description": "Scan the login page",
+      "scan_scope": "pre_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "click_through_login",
+      "description": "Click Continue/Proceed buttons repeatedly to reach the dashboard without entering credentials",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "button:has-text('Continue'), button:has-text('Proceed'), button:has-text('Next'), button:has-text('Submit'), button:has-text('Login'), button:has-text('Sign In'), button:has-text('Log In'), button[type='submit'], input[type='submit'], a:has-text('Continue'), a:has-text('Proceed')",
+          "description": "Click Continue/Proceed to advance without credentials"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "click_through_2",
+      "description": "Click Continue/Proceed again if another step appears",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "button:has-text('Continue'), button:has-text('Proceed'), button:has-text('Next'), button:has-text('Submit'), button:has-text('Login'), button:has-text('Sign In'), button:has-text('Log In'), button:has-text('OK'), button:has-text('Skip'), button[type='submit'], input[type='submit'], a:has-text('Continue'), a:has-text('Proceed')",
+          "description": "Click Continue/Proceed again"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "click_through_3",
+      "description": "Click Continue/Proceed again if another step appears",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "button:has-text('Continue'), button:has-text('Proceed'), button:has-text('Next'), button:has-text('Submit'), button:has-text('Login'), button:has-text('Sign In'), button:has-text('Log In'), button:has-text('OK'), button:has-text('Skip'), button[type='submit'], input[type='submit'], a:has-text('Continue'), a:has-text('Proceed')",
+          "description": "Click Continue/Proceed again"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "click_through_4",
+      "description": "Click Continue/Proceed again if another step appears",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "button:has-text('Continue'), button:has-text('Proceed'), button:has-text('Next'), button:has-text('Submit'), button:has-text('Login'), button:has-text('Sign In'), button:has-text('Log In'), button:has-text('OK'), button:has-text('Skip'), button[type='submit'], input[type='submit'], a:has-text('Continue'), a:has-text('Proceed')",
+          "description": "Click Continue/Proceed again"
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "post_login_scan",
+      "description": "Scan the dashboard after clicking through",
+      "scan_scope": "post_login",
+      "actions": [],
+      "wait_after": 3000
+    },
+    {
+      "id": "explore_all",
+      "description": "Explore all reachable pages and routes after reaching dashboard",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Explore all pages — dashboard, loans, applications, payments, profile, settings, and any other sections available"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": true,
+    "max_explore_depth": 400,
+    "max_screens": 150,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "stagnation_window": 30,
+    "strict_flow_actions": false,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "name": "Kotak NEO Trade - StockCase & SipIt",
+  "app_id": "KOTAKNEOTRADE",
+  "start_url": "https://www.kotakneo.com",
+  "domain": "kotakneo.com",
+  "flow_steps": [
+    {
+      "id": "manual_login",
+      "description": "User completes login manually",
+      "scan_scope": "pre_login",
+      "actions": [
+        {
+          "type": "manual",
+          "description": "User logs in manually on kotakneo.com",
+          "instructions": "Complete the login manually. Scanner will resume after URL changes.",
+          "completion_url_changed": true,
+          "timeout_ms": 180000,
+          "poll_interval_ms": 3000,
+          "stable_wait_ms": 5000
+        }
+      ],
+      "wait_after": 3000
+    },
+    {
+      "id": "stockcase_discover",
+      "description": "Navigate to StockCase Discover and scan",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://trade.kotakneo.com/stockcase/discover",
+          "description": "Navigate to StockCase Discover"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "explore_stockcase",
+      "description": "Explore StockCase Discover page thoroughly — scroll, click tabs, sections, cards, filters",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Thoroughly explore the StockCase Discover page — scroll through all content, click on tabs, filters, stock cards, categories, and any interactive elements. Capture each unique view. Stay on stockcase pages only."
+        }
+      ]
+    },
+    {
+      "id": "sipit_landing",
+      "description": "Navigate to SipIt Landing and scan",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "navigate",
+          "url": "https://trade.kotakneo.com/sipIt/landing",
+          "description": "Navigate to SipIt Landing"
+        }
+      ],
+      "wait_after": 5000
+    },
+    {
+      "id": "explore_sipit",
+      "description": "Explore SipIt Landing page thoroughly — scroll, click tabs, sections, cards, filters",
+      "scan_scope": "post_login",
+      "actions": [
+        {
+          "type": "explore",
+          "description": "Thoroughly explore the SipIt Landing page — scroll through all content, click on tabs, filters, fund cards, categories, and any interactive elements. Capture each unique view. Stay on sipIt pages only."
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "analyze_every_screen": true,
+    "screenshot_each_step": true,
+    "run_wcag_buckets": true,
+    "explore_all_routes": false,
+    "max_explore_depth": 80,
+    "max_screens": 30,
+    "stagnation_window": 15,
+    "unique_screen_dedup": true,
+    "llm_failure_fallback": true,
+    "strict_flow_actions": true,
+    "cannot_verify_policy": "pass_leaning",
+    "cannot_verify_threshold": 31,
+    "cannot_verify_enforcement": "both",
+    "run_zoom_test": true,
+    "run_text_spacing_test": true,
+    "run_keyboard_test": true,
+    "run_screen_reader_test": true
+  }
+}
